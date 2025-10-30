@@ -42,20 +42,13 @@ void consume() {
 
 void displayBuffer() {
     int i;
-    printf("\n+---------------------+\n");
-    printf("|   BUFFER STATUS     |\n");
-    printf("+---------------------+\n");
-    printf("| Index | Content     |\n");
-    printf("+-------+-------------+\n");
+    printf("\nBuffer Status:\n");
+    printf("--------------\n");
     for (i = 0; i < BUFFER_SIZE; i++) {
-        printf("| %3d   | %-10s  |\n", i, buffer[i]);
+        printf("Slot %d: %s\n", i, buffer[i]);
     }
-    printf("+-------+-------------+\n");
-    printf("| Empty slots: %-5d  |\n", empty);
-    printf("| Full slots:  %-5d  |\n", full);
-    printf("| IN pointer:  %-5d  |\n", in);
-    printf("| OUT pointer: %-5d  |\n", out);
-    printf("+---------------------+\n");
+    printf("--------------\n");
+    printf("Empty: %d, Full: %d, In: %d, Out: %d\n", empty, full, in, out);
 }
 
 int main() {
