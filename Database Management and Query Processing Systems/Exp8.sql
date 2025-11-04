@@ -10,7 +10,7 @@ SELECT TABLE_NAME, IS_UPDATABLE FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA
 create view view4 as select empname,empno,salary,pno,pname as works_on,hours_per_week from employee join workson on empno=eno join project on pno=proj_num;
 
 create view view5 as select pno,empname,count(empno) as no_of_emps,sum(hours_per_week) as tot_time from view4 group by pno; 
-
+ 
 create view view6 as select empno,empname, count(pno) as no_of_projs, sum(hours_per_week) as tot_time from view4 group by empno;
 
 create temporary table temp1 as select empno,empname,pname,hours_per_week from employee join workson on empno=eno join project on pno=proj_num where location='BANGALORE'; 
