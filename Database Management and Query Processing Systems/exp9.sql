@@ -2,8 +2,8 @@ CREATE USER 'Chinmay'@'localhost' IDENTIFIED BY 'Chinmay123';
 CREATE USER 'Chirag'@'localhost' IDENTIFIED BY 'Chirag123';
 CREATE USER 'Audumber'@'localhost' IDENTIFIED BY 'Audumber123';
 
-CREATE VIEW emp_view AS SELECT Empno, Empname, Gender, job, deptno, salary FROM employee WHERE job = 'CLERK';
-GRANT ALL PRIVILEGES ON Atharv.emp_view TO 'Chinmay'@'localhost';
+
+GRANT ALL PRIVILEGES ON Atharv.view1 TO 'Chinmay'@'localhost';
 
  GRANT SELECT ON Atharv.employee TO 'Chirag'@'localhost';
 GRANT UPDATE (Empname, deptno) ON Atharv.employee TO 'Chirag'@'localhost' WITH GRANT OPTION;
@@ -26,11 +26,8 @@ SHOW GRANTS FOR 'Audumber'@'localhost';
 
 FLUSH PRIVILEGES;
 
-
-The following are the most common privileges available to grant to users in MySQL/MariaDB:
-Data Privileges: SELECT, INSERT, UPDATE, DELETE
-Structure Privileges: CREATE, ALTER, DROP (for tables/databases)
-Administration Privileges: GRANT OPTION (allows a user to grant their own privileges to others), SUPER, SHUTDOWN, RELOAD
+mysql -u root -p
+FLUSH PRIVILEGES;
 
 
 CREATE INDEX idx_empname ON employee (Empname);
