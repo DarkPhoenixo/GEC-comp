@@ -1,0 +1,12 @@
+select dname, count(empno) as no_of_emps,min(salary) as minsal, max(salary) as maxsal,avg(salary) as avgsal from Employee natural join dept group by dname;
+select dname,sum(salary) as tot_payable from Employee natural join dept group by dname;
+select job,count(empno) as no_of_emps from Employee group by job order by no_of_emps desc;
+select job,sum(salary) as totsal, avg(salary) as avgsal,min(salary) as minsal from Employee group by job;
+select job, sum(salary) as totsal from Employee natural join dept where dname='research' group by job;
+select job,sum(salary) as totsal from Employee natural join dept where dname='admin' group by job having avg(salary)>50000;
+select dname,count(proj_num) as no_of_projects from project join dept on project.dnum=dept.deptno group by dname;
+select proj_num,pname,count(eno) as no_of_emps from project join workson on project.proj_num=workson.pno group by proj_num;
+select pname,sum(hours_per_week) as tot_time from workson join project on workson.pno=project.proj_num group by proj_num;
+select pname,avg(salary) as avgsal from Employee join workson on Employee.empno=workson.eno join project on workson.pno=project.proj_num group by pno having count(empno) >3;
+select dname,min(salary),max(salary) from Employee natural join dept where gender='F' group by dname having count(empno)>2;
+select empname,count(pno) as no_of_projects, sum(hours_per_week) as tot_time from Employee join workson on Employee.empno =workson.eno group by empno; 

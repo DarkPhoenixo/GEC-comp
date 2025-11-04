@@ -1,0 +1,17 @@
+select empname from employee where job=(select job from employee where empname='smith');
+select empname from employee where deptno in (select deptno from dept where dname='research' or dname='sales');
+select empname, salary from employee where deptno in (select deptno from dept where location="bangalore");
+select empname,salary from employee where salary > (select min(salary) from employee where deptno=(select deptno from dept where dname='research'));
+select empname,salary from employee where salary> (select max(salary) from employee where deptno=(select deptno from dept where dname='admin'));
+select empname from employee where salary=(select max(salary) from employee);
+select e.empname,e.deptno from employee e where e.salary in (select max(salary) from employee where e.deptno=deptno);
+select empname from employee where salary=(select max(salary) from employee where salary<(select max(salary) from employee));
+select empname from employee where empno=(select managerno from employee group by managerno having count(*)=(select max(c) from(select managerno,count(*) as c from employee group by managerno) as x));
+select empname from employee e where salary>(select avg(salary) from employee where e.deptno=deptno);
+select e1.empname ,(select e2.empname from employee e2 where e1.managerno=e2.empno) as mgrname from employee e1 where e1.salary>(select e3.salary from employee e3 where e1.managerno=e3.empno);
+select (select dname from dept where deptno=e1.deptno) as dept,avg(salary) from employee e1 group by deptno having avg(salary)> (select avg(salary) from employee);
+select (select dname from dept where deptno=e.deptno) as dept, e.empname,count(*) from employee e where salary>40000 and e.deptno in (select deptno from employee group by deptno having count(*)>2) group by deptno; 
+select empname from employee where empno=(select eno from workson group by eno having sum(hours_per_week)=(select max(s) from (select eno,sum(hours_per_week) as s from workson group by eno) as x));
+select empname from employee where empno in(select eno from workson where pno in (select proj_num from project where dnum=30) group by eno having count(pno)=(select count(proj_num) from project where dnum=30));
+select empname from employee where empno in (select eno from workson where hours_per_week=(select max(hours_per_week) from workson) group by eno having count(pno)=1);
+select empname,(select dname from dept where e.deptno=deptno) as dept from employee e where salary=(select max(salary) from employee where deptno=e.deptno);
