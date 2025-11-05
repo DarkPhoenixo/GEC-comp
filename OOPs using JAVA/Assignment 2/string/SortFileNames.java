@@ -43,9 +43,9 @@ public class SortFileNames {
         File file = new File(FILE_NAME);
         if (!file.exists()) {
             try (PrintWriter writer = new PrintWriter(FILE_NAME)) {
-                writer.println("Chinmay");
-                writer.println("Chirag");
-                writer.println("Audumber");
+                writer.println("emp1");
+                writer.println("emp2");
+                writer.println("emp3");
             } catch (FileNotFoundException e) {
             }
         }
