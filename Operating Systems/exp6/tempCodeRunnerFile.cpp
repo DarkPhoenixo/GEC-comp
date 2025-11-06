@@ -226,27 +226,6 @@ int main() {
             Need[p][i] -= Request[i];
         }
 
-        bool allZeroAvail = true;
-        for (int i = 0; i < m; i++) {
-            if (Available[i] != 0) {
-                allZeroAvail = false;
-                break;
-            }
-        }
-
-        if (allZeroAvail) {
-            cout << "\nBanker's Algorithm can't allow available resources to be 0,0,0 for this request. Request rejected.\n";
-            // Restore state
-            for (int i = 0; i < m; i++) {
-                Available[i] += Request[i];
-                Allocation[p][i] -= Request[i];
-                Need[p][i] += Request[i];
-            }
-            cout << "Try another? (Y/N): ";
-            cin >> choice;
-            continue;
-        }
-
         cout << "\nTemporary State:" << endl;
         displayTemp();
         stateFlag = safety();
