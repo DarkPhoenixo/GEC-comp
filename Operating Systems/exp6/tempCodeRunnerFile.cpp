@@ -56,11 +56,21 @@ int safety() {
             break;
     }
 
+    vector<int> unfinished;
     for (int i = 0; i < n; i++) {
         if (!Finish[i]) {
-            cout << "\nUnsafe state.\n";
-            return 1;  // unsafe
+            unfinished.push_back(i);
         }
+    }
+
+    if (!unfinished.empty()) {
+        cout << "\nUnsafe state because the following processes cannot be allocated the required resources: ";
+        for (size_t idx = 0; idx < unfinished.size(); idx++) {
+            cout << "P" << unfinished[idx];
+            if (idx < unfinished.size() - 1) cout << ", ";
+        }
+        cout << ". This indicates a potential deadlock risk." << endl;
+        return 1;  // unsafe
     }
 
     cout << "\nSafe state. Sequence: <";
@@ -71,64 +81,119 @@ int safety() {
 }
 
 void display() {
-    const int procWidth = 8;
-    const int resWidth = 12;  // Adjust as needed for better alignment
+    // Column widths
+    const int procW = 6;
+    const int colW = 12;
+    const int smallW = 2;
 
-    cout << left << setw(procWidth) << "Process" << "| " << left << setw(resWidth) << "Allocated" << "| " << left << setw(resWidth) << "Maximum" << "| " << left << setw(resWidth) << "Need" << endl;
-    cout << string(procWidth, '-') << "|-" << string(resWidth, '-') << "|-" << string(resWidth, '-') << "|-" << string(resWidth, '-') << endl;
+    // Header
+    cout << left << setw(procW) << "Proc"
+         << " | " << setw(colW) << "Allocated"
+         << " | " << setw(colW) << "Maximum"
+         << " | " << setw(colW) << "Available"
+         << " | " << setw(colW) << "Need" << endl;
 
-    for (int i = 0; i < n; i++) {
-        string allocStr = "";
-        for (int j = 0; j < m; j++) {
-            allocStr += to_string(Allocation[i][j]) + (j < m - 1 ? " " : "");
-        }
-        string maxStr = "";
-        for (int j = 0; j < m; j++) {
-            maxStr += to_string(Max[i][j]) + (j < m - 1 ? " " : "");
-        }
-        string needStr = "";
-        for (int j = 0; j < m; j++) {
-            needStr += to_string(Need[i][j]) + (j < m - 1 ? " " : "");
-        }
-
-        cout << left << setw(procWidth) << ("P" + to_string(i)) << "| " << left << setw(resWidth) << allocStr << "| " << left << setw(resWidth) << maxStr << "| " << left << setw(resWidth) << needStr << endl;
-    }
-
-    cout << string(procWidth, '-') << "|-" << string(resWidth, '-') << "|-" << string(resWidth, '-') << "|-" << string(resWidth, '-') << endl;
-
-    string availStr = "";
-    for (int j = 0; j < m; j++) {
-        availStr += to_string(Available[j]) + (j < m - 1 ? " " : "");
-    }
-    cout << left << setw(procWidth) << "Available" << "| " << left << setw(resWidth) << availStr << "| " << string(resWidth, ' ') << "| " << string(resWidth, ' ') << endl;
-}
-
-void displayTemp() {
-    const int numWidth = 3;
-    int allocWidth = m * numWidth;
-    int availWidth = m * numWidth;
-    int needWidth = m * numWidth;
-    int procWidth = 7;
-
-    cout << left << setw(procWidth) << "Process" << " | " << left << setw(allocWidth) << "Allocation" << " | " << left << setw(availWidth) << "Available" << " | " << left << setw(needWidth) << "Need" << endl;
-
-    cout << string(procWidth, '-') << "|" << string(allocWidth, '-') << "|" << string(availWidth, '-') << "|" << string(needWidth, '-') << endl;
+    cout << string(procW, '-') << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-') << endl;
 
     for (int i = 0; i < n; i++) {
-        cout << left << setw(procWidth) << ("P" + to_string(i)) << " | ";
-        for (int j = 0; j < m; j++) cout << right << setw(numWidth) << Allocation[i][j];
-        cout << " | ";
+        cout << "P" << i << setw(procW - 1) << " " << " | ";
+
+        // Allocated
+        for (int j = 0; j < m; j++) {
+            cout << Allocation[i][j];
+            if (j < m - 1) cout << " ";
+        }
+        // pad to column width
+        cout << setw(colW - (m * 2 - 1)) << " " << " | ";
+
+        // Maximum
+        for (int j = 0; j < m; j++) {
+            cout << Max[i][j];
+            if (j < m - 1) cout << " ";
+        }
+        cout << setw(colW - (m * 2 - 1)) << " " << " | ";
+
+        // Available (show only on first row to avoid repetition)
         if (i == 0) {
-            for (int j = 0; j < m; j++) cout << right << setw(numWidth) << Available[j];
+            for (int j = 0; j < m; j++) {
+                cout << Available[j];
+                if (j < m - 1) cout << " ";
+            }
+            cout << setw(colW - (m * 2 - 1)) << " ";
         } else {
-            cout << string(availWidth, ' ');
+            cout << setw(colW) << " ";
         }
+
         cout << " | ";
-        for (int j = 0; j < m; j++) cout << right << setw(numWidth) << Need[i][j];
+
+        // Need
+        for (int j = 0; j < m; j++) {
+            cout << Need[i][j];
+            if (j < m - 1) cout << " ";
+        }
+
         cout << endl;
     }
 
-    cout << string(procWidth, '-') << "|" << string(allocWidth, '-') << "|" << string(availWidth, '-') << "|" << string(needWidth, '-') << endl;
+    cout << string(procW, '-') << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-') << endl;
+}
+
+void displayTemp() {
+    // Similar to display but labeled differently
+    const int procW = 6;
+    const int colW = 12;
+
+    cout << "Running Resource State:" << endl;
+    cout << left << setw(procW) << "Proc"
+         << " | " << setw(colW) << "Allocation"
+         << " | " << setw(colW) << "Available"
+         << " | " << setw(colW) << "Need" << endl;
+
+    cout << string(procW, '-') << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-') << endl;
+
+    for (int i = 0; i < n; i++) {
+        cout << "P" << i << setw(procW - 1) << " " << " | ";
+
+        // Allocation
+        for (int j = 0; j < m; j++) {
+            cout << Allocation[i][j];
+            if (j < m - 1) cout << " ";
+        }
+        cout << setw(colW - (m * 2 - 1)) << " " << " | ";
+
+        // Available (show only on first row)
+        if (i == 0) {
+            for (int j = 0; j < m; j++) {
+                cout << Available[j];
+                if (j < m - 1) cout << " ";
+            }
+            cout << setw(colW - (m * 2 - 1)) << " ";
+        } else {
+            cout << setw(colW) << " ";
+        }
+
+        cout << " | ";
+
+        // Need
+        for (int j = 0; j < m; j++) {
+            cout << Need[i][j];
+            if (j < m - 1) cout << " ";
+        }
+
+        cout << endl;
+    }
+
+    cout << string(procW, '-') << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-')
+         << "-|-" << string(colW, '-') << endl;
 }
 
 int main() {
@@ -224,6 +289,27 @@ int main() {
             Available[i] -= Request[i];
             Allocation[p][i] += Request[i];
             Need[p][i] -= Request[i];
+        }
+
+        bool allZeroAvail = true;
+        for (int i = 0; i < m; i++) {
+            if (Available[i] != 0) {
+                allZeroAvail = false;
+                break;
+            }
+        }
+
+        if (allZeroAvail) {
+            cout << "\nBanker's Algorithm can't allow available resources to be 0,0,0 for this request. Request rejected.\n";
+            // Restore state
+            for (int i = 0; i < m; i++) {
+                Available[i] += Request[i];
+                Allocation[p][i] -= Request[i];
+                Need[p][i] += Request[i];
+            }
+            cout << "Try another? (Y/N): ";
+            cin >> choice;
+            continue;
         }
 
         cout << "\nTemporary State:" << endl;
