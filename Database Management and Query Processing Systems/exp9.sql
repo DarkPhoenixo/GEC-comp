@@ -11,7 +11,7 @@ GRANT UPDATE (Empname, deptno) ON Atharv.employee TO 'emp2'@'localhost' WITH GRA
 
 EXIT;
 mysql -u emp2 -p
--- Enter password: emp2W
+ emp2W
 GRANT SELECT ON Atharv.employee TO 'emp1'@'localhost';
 GRANT UPDATE (Empname, deptno) ON Atharv.employee TO 'emp1'@'localhost';
 EXIT;
