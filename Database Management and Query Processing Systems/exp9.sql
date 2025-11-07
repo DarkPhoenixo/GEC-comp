@@ -34,6 +34,7 @@ SHOW GRANTS FOR 'empl'@'localhost';
 
 CREATE INDEX idx ON employee (Empname);
 
+
 SELECT user, host FROM mysql.user WHERE user IN ('emp1', 'emp2', 'emp3');
 SHOW GRANTS FOR 'emp1'@'localhost';
 SHOW GRANTS FOR 'emp2'@'localhost';
