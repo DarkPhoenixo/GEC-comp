@@ -30,12 +30,76 @@ void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
     cout << "===============================================\n";
 }
 
+void displayVisualDiagram(const vector<MemoryBlock>& blocks) {
+    cout << "\n================  Memory Diagram ================\n";
+    
+    // Top border
+    cout << "+";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10); // Scale width based on size
+        for (int i = 0; i < width; ++i) cout << "-";
+        cout << "+";
+    }
+    cout << "\n";
+    
+    // Block content (with hatching for allocated blocks)
+    cout << "|";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        if (block.allocated) {
+            // Show hatching pattern for allocated blocks
+            for (int i = 0; i < width; ++i) {
+                cout << (i % 2 == 0 ? '/' : ' ');
+            }
+        } else {
+            // Empty for free blocks
+            for (int i = 0; i < width; ++i) cout << " ";
+        }
+        cout << "|";
+    }
+    cout << "\n";
+    
+    // Bottom border
+    cout << "+";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        for (int i = 0; i < width; ++i) cout << "-";
+        cout << "+";
+    }
+    cout << "\n";
+    
+    // Position labels
+    cout << " ";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        cout << setw(width) << left << block.start << " ";
+    }
+    // Print the final end position
+    if (!blocks.empty()) {
+        cout << blocks.back().end;
+    }
+    cout << "\n";
+    
+
+    
+    // Process details
+    cout << "\nAllocated Processes:\n";
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (blocks[i].allocated) {
+            cout << "  Block " << (i + 1) << " [" << blocks[i].start << "-" << blocks[i].end 
+                 << "]: Process " << blocks[i].processId << " (" << blocks[i].processSize << " KB)\n";
+        }
+    }
+    cout << "=======================================================\n";
+}
+
 void allocateFixed(vector<MemoryBlock>& blocks, const string& pid, int size, int bestIndex) {
     blocks[bestIndex].allocated = true;
     blocks[bestIndex].processId = pid;
     blocks[bestIndex].processSize = size;
     cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB, Wasted: " << (blocks[bestIndex].size - size) << " KB) to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
     displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
     // Calculate and display total internal fragmentation
     int totalWaste = 0;
     for (const auto& b : blocks) {
@@ -64,6 +128,7 @@ void allocateVariable(vector<MemoryBlock>& blocks, const string& pid, int size, 
     blocks = newBlocks;
     cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB) starting at " << blocks[bestIndex].start << " KB.\n";
     displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
 }
 
 int main() {
@@ -100,7 +165,7 @@ int main() {
                 cin >> ws;
                 getline(cin, pid);
             }
-            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, occupied ? size : 0}); // processSize set to block size if occupied, else 0
+            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, occupied ? size : 0});
             currentStart += size;
         }
     } else {
@@ -110,8 +175,10 @@ int main() {
 
     cout << "Initial Memory Blocks:\n";
     displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
 
     // Dynamic request loop
+    int requestId = 1;
     while (true) {
         string ans;
         cout << "\nDo you have a request? (yes/no): ";
@@ -122,6 +189,10 @@ int main() {
         if (ans != "yes") {
             continue;
         }
+
+        cout << "\n====================================\n";
+        cout << "         Request ID: " << requestId << "\n";
+        cout << "====================================\n";
 
         string pid;
         int size;
@@ -152,6 +223,8 @@ int main() {
         } else {
             cout << "Request rejected as it will cause external fragmentation.\n";
         }
+
+        requestId++;
     }
 
     cout << "\nThank you.\n";
