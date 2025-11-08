@@ -1,116 +1,228 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <iomanip>
 #include <string>
+#define INT_MAX 2147483647
 
 using namespace std;
 
-// Structure for Memory Block
 struct MemoryBlock {
+    int start;
+    int end;
     int size;
     bool allocated;
-    int processId; // -1 if not allocated
+    string processId;
+    int processSize; 
 };
 
-// Structure for Process
-struct Process {
-    int id;
-    int size;
-    bool allocated;
-    int blockIndex; // -1 if not allocated
-};
-
-// Function to display memory blocks in a table
-void displayMemory(const vector<MemoryBlock>& blocks, const string& title) {
-    cout << "\n" << string(50, '=') << "\n";
-    cout << title << "\n";
-    cout << string(50, '=') << "\n";
-    cout << left << setw(10) << "Block" << setw(10) << "Size" << setw(12) << "Allocated" << "Process ID\n";
-    cout << string(50, '-') << "\n";
+void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
+    cout << "\n================ Memory Layout ================\n";
     for (size_t i = 0; i < blocks.size(); ++i) {
-        cout << left << setw(10) << i + 1
-             << setw(10) << blocks[i].size
-             << setw(12) << (blocks[i].allocated ? "Yes" : "No")
-             << (blocks[i].allocated ? to_string(blocks[i].processId) : "N/A") << "\n";
+        const auto& block = blocks[i];
+        cout << "Block " << (i + 1) << ": [" << block.start << " - " << block.end << "] ";
+        if (block.allocated) {
+            cout << "Allocated to Process " << block.processId << " (Used: " << block.processSize << " KB, Block Size: " << block.size << " KB)\n";
+        } else {
+            cout << "Free (Size: " << block.size << " KB)\n";
+        }
     }
-    cout << string(50, '=') << "\n";
+    cout << "===============================================\n";
 }
 
-// Function to display processes in a table
-void displayProcesses(const vector<Process>& processes, const string& title) {
-    cout << "\n" << string(50, '=') << "\n";
-    cout << title << "\n";
-    cout << string(50, '=') << "\n";
-    cout << left << setw(10) << "Process" << setw(10) << "Size" << setw(12) << "Allocated" << "Block Index\n";
-    cout << string(50, '-') << "\n";
-    for (const auto& p : processes) {
-        cout << left << setw(10) << p.id
-             << setw(10) << p.size
-             << setw(12) << (p.allocated ? "Yes" : "No")
-             << (p.allocated ? to_string(p.blockIndex + 1) : "N/A") << "\n";
+void displayVisualDiagram(const vector<MemoryBlock>& blocks) {
+    cout << "\n================  Memory Diagram ================\n";
+    
+    // Top border
+    cout << "+";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10); // Scale width based on size
+        for (int i = 0; i < width; ++i) cout << "-";
+        cout << "+";
     }
-    cout << string(50, '=') << "\n";
+    cout << "\n";
+    
+    // Block content (with hatching for allocated blocks)
+    cout << "|";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        if (block.allocated) {
+            // Show hatching pattern for allocated blocks
+            for (int i = 0; i < width; ++i) {
+                cout << (i % 2 == 0 ? '/' : ' ');
+            }
+        } else {
+            // Empty for free blocks
+            for (int i = 0; i < width; ++i) cout << " ";
+        }
+        cout << "|";
+    }
+    cout << "\n";
+    
+    // Bottom border
+    cout << "+";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        for (int i = 0; i < width; ++i) cout << "-";
+        cout << "+";
+    }
+    cout << "\n";
+    
+    // Position labels
+    cout << " ";
+    for (const auto& block : blocks) {
+        int width = max(8, block.size / 10);
+        cout << setw(width) << left << block.start << " ";
+    }
+    // Print the final end position
+    if (!blocks.empty()) {
+        cout << blocks.back().end;
+    }
+    cout << "\n";
+    
+
+    
+    // Process details
+    cout << "\nAllocated Processes:\n";
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (blocks[i].allocated) {
+            cout << "  Block " << (i + 1) << " [" << blocks[i].start << "-" << blocks[i].end 
+                 << "]: Process " << blocks[i].processId << " (" << blocks[i].processSize << " KB)\n";
+        }
+    }
+    cout << "=======================================================\n";
 }
 
-// First Fit Memory Allocation Algorithm
-void firstFit(vector<MemoryBlock>& blocks, vector<Process>& processes) {
-    for (auto& process : processes) {
-        for (size_t i = 0; i < blocks.size(); ++i) {
-            if (!blocks[i].allocated && blocks[i].size >= process.size) {
-                blocks[i].allocated = true;
-                blocks[i].processId = process.id;
-                process.allocated = true;
-                process.blockIndex = i;
-                break;
+void allocateFixed(vector<MemoryBlock>& blocks, const string& pid, int size, int firstIndex) {
+    blocks[firstIndex].allocated = true;
+    blocks[firstIndex].processId = pid;
+    blocks[firstIndex].processSize = size;
+    cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB, Wasted: " << (blocks[firstIndex].size - size) << " KB) to Block " << firstIndex + 1 << " (Start: " << blocks[firstIndex].start << ", End: " << blocks[firstIndex].end << ")\n";
+    displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
+    // Calculate and display total internal fragmentation
+    int totalWaste = 0;
+    for (const auto& b : blocks) {
+        if (b.allocated) {
+            totalWaste += b.size - b.processSize;
+        }
+    }
+    cout << "Total internal fragmentation: " << totalWaste << " KB\n";
+}
+
+void allocateVariable(vector<MemoryBlock>& blocks, const string& pid, int size, int firstIndex) {
+    vector<MemoryBlock> newBlocks;
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (i != firstIndex) {
+            newBlocks.push_back(blocks[i]);
+        } else {
+            // Allocated part
+            newBlocks.push_back({blocks[i].start, blocks[i].start + size, size, true, pid, size});
+            // Free part if any
+            if (blocks[i].size > size) {
+                int remainingSize = blocks[i].size - size;
+                newBlocks.push_back({blocks[i].start + size, blocks[i].end, remainingSize, false, "", 0});
             }
         }
     }
+    blocks = newBlocks;
+    cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB) starting at " << blocks[firstIndex].start << " KB.\n";
+    displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
 }
 
 int main() {
-    int numBlocks, numProcesses;
-    
-    cout << "First Fit Memory Allocation Simulator\n";
     cout << "=====================================\n";
-    
-    // Input number of memory blocks
-    cout << "Enter the number of memory blocks: ";
-    cin >> numBlocks;
-    
-    vector<MemoryBlock> blocks(numBlocks);
-    cout << "Enter the sizes of the memory blocks:\n";
-    for (int i = 0; i < numBlocks; ++i) {
-        cout << "Block " << i + 1 << ": ";
-        cin >> blocks[i].size;
-        blocks[i].allocated = false;
-        blocks[i].processId = -1;
+    cout << "   First Fit Memory Allocation\n";
+    cout << "=====================================\n";
+
+    string approach;
+    cout << "Enter the approach (fixed/variable): ";
+    cin >> approach;
+
+    int totalMemory;
+    cout << "Enter total memory size in KB: ";
+    cin >> totalMemory;
+
+    vector<MemoryBlock> blocks;
+    if (approach == "fixed" || approach == "variable") {
+        int currentStart = 0;
+        while (currentStart < totalMemory) {
+            int size;
+            cout << "Enter size of block starting at " << currentStart << " KB (remaining: " << (totalMemory - currentStart) << " KB): ";
+            cin >> size;
+            if (size <= 0 || currentStart + size > totalMemory) {
+                cout << "Invalid size. Must be positive and not exceed remaining memory. Try again.\n";
+                continue;
+            }
+            string state;
+            cout << "Is this block occupied? (yes/no): ";
+            cin >> state;
+            bool occupied = (state == "yes");
+            string pid = "";
+            if (occupied) {
+                cout << "Enter process ID: ";
+                cin >> ws;
+                getline(cin, pid);
+            }
+            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, occupied ? size : 0});
+            currentStart += size;
+        }
+    } else {
+        cout << "Invalid approach. Choose 'fixed' or 'variable'.\n";
+        return 1;
     }
-    
-    // Input number of processes
-    cout << "Enter the number of processes: ";
-    cin >> numProcesses;
-    
-    vector<Process> processes(numProcesses);
-    cout << "Enter the sizes of the processes:\n";
-    for (int i = 0; i < numProcesses; ++i) {
-        processes[i].id = i + 1;
-        cout << "Process " << i + 1 << ": ";
-        cin >> processes[i].size;
-        processes[i].allocated = false;
-        processes[i].blockIndex = -1;
+
+    cout << "Initial Memory Blocks:\n";
+    displayMemoryDiagram(blocks);
+    displayVisualDiagram(blocks);
+
+    // Dynamic request loop
+    int requestId = 1;
+    while (true) {
+        string ans;
+        cout << "\nDo you have a request? (yes/no): ";
+        cin >> ans;
+        if (ans == "no") {
+            break;
+        }
+        if (ans != "yes") {
+            continue;
+        }
+
+        cout << "\n====================================\n";
+        cout << "         Request ID: " << requestId << "\n";
+        cout << "====================================\n";
+
+        string pid;
+        int size;
+        cout << "Enter process ID: ";
+        cin >> pid;
+        cout << "Enter process size in KB: ";
+        cin >> size;
+
+        // Find first fit
+        int firstIndex = -1;
+        for (size_t i = 0; i < blocks.size(); ++i) {
+            if (!blocks[i].allocated && blocks[i].size >= size) {
+                firstIndex = i;
+                break;
+            }
+        }
+
+        if (firstIndex != -1) {
+            if (approach == "fixed") {
+                allocateFixed(blocks, pid, size, firstIndex);
+            } else if (approach == "variable") {
+                allocateVariable(blocks, pid, size, firstIndex);
+            }
+        } else {
+            cout << "Request rejected as it will cause external fragmentation.\n";
+        }
+
+        requestId++;
     }
-    
-    // Display initial state
-    displayMemory(blocks, "Initial Memory Blocks");
-    displayProcesses(processes, "Initial Processes");
-    
-    // Perform First Fit Allocation
-    firstFit(blocks, processes);
-    
-    // Display final state
-    displayMemory(blocks, "Memory Blocks After Allocation");
-    displayProcesses(processes, "Processes After Allocation");
-    
-    cout << "\nAllocation complete!\n";
+
+    cout << "\nThank you.\n";
     return 0;
 }

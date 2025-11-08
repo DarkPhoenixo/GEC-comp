@@ -2,14 +2,14 @@ fixed
 1450
 50
 yes
-Hello
+00
 150
 no
 300
 yes 
-Viva
+01
 350
 no
 600
 yes
-vamos
+02
