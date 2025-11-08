@@ -1,0 +1,15 @@
+variable
+1450
+50
+yes
+Hello
+150
+no
+300
+yes 
+Viva
+350
+no
+600
+yes
+vamos

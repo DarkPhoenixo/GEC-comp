@@ -30,6 +30,42 @@ void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
     cout << "===============================================\n";
 }
 
+void allocateFixed(vector<MemoryBlock>& blocks, const string& pid, int size, int bestIndex) {
+    blocks[bestIndex].allocated = true;
+    blocks[bestIndex].processId = pid;
+    blocks[bestIndex].processSize = size;
+    cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB, Wasted: " << (blocks[bestIndex].size - size) << " KB) to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
+    displayMemoryDiagram(blocks);
+    // Calculate and display total internal fragmentation
+    int totalWaste = 0;
+    for (const auto& b : blocks) {
+        if (b.allocated) {
+            totalWaste += b.size - b.processSize;
+        }
+    }
+    cout << "Total internal fragmentation: " << totalWaste << " KB\n";
+}
+
+void allocateVariable(vector<MemoryBlock>& blocks, const string& pid, int size, int bestIndex) {
+    vector<MemoryBlock> newBlocks;
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (i != bestIndex) {
+            newBlocks.push_back(blocks[i]);
+        } else {
+            // Allocated part
+            newBlocks.push_back({blocks[i].start, blocks[i].start + size, size, true, pid, size});
+            // Free part if any
+            if (blocks[i].size > size) {
+                int remainingSize = blocks[i].size - size;
+                newBlocks.push_back({blocks[i].start + size, blocks[i].end, remainingSize, false, "", 0});
+            }
+        }
+    }
+    blocks = newBlocks;
+    cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB) starting at " << blocks[bestIndex].start << " KB.\n";
+    displayMemoryDiagram(blocks);
+}
+
 int main() {
     cout << "=====================================\n";
     cout << "   Best Fit Memory Allocation\n";
@@ -108,20 +144,10 @@ int main() {
         }
 
         if (bestIndex != -1) {
-            blocks[bestIndex].allocated = true;
-            blocks[bestIndex].processId = pid;
-            blocks[bestIndex].processSize = size;
-            cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB, Wasted: " << (blocks[bestIndex].size - size) << " KB) to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
-            displayMemoryDiagram(blocks);
             if (approach == "fixed") {
-                // Calculate and display total internal fragmentation
-                int totalWaste = 0;
-                for (const auto& b : blocks) {
-                    if (b.allocated) {
-                        totalWaste += b.size - b.processSize;
-                    }
-                }
-                cout << "Total internal fragmentation: " << totalWaste << " KB\n";
+                allocateFixed(blocks, pid, size, bestIndex);
+            } else if (approach == "variable") {
+                allocateVariable(blocks, pid, size, bestIndex);
             }
         } else {
             cout << "Request rejected as it will cause external fragmentation.\n";
