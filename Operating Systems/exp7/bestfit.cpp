@@ -7,41 +7,25 @@
 
 using namespace std;
 
-// Structure for Memory Block
 struct MemoryBlock {
     int start;
     int end;
     int size;
     bool allocated;
-    string processId; // "" if not allocated
+    string processId;
 };
 
-// Structure for Process
 struct Process {
     string id;
     int size;
     bool allocated;
 };
 
-// Function to display memory blocks in a table format
-void displayMemory(const vector<MemoryBlock>& blocks) {
-    cout << "\n+-------------------+-------+-------+------------+\n";
-    cout << "| Memory Block      | Start | End   | Process ID |\n";
-    cout << "+-------------------+-------+-------+------------+\n";
-    for (size_t i = 0; i < blocks.size(); ++i) {
-        cout << "| Block " << setw(11) << i + 1 << " | " << setw(5) << blocks[i].start << " | " << setw(5) << blocks[i].end << " | ";
-        if (blocks[i].allocated) {
-            cout << setw(10) << blocks[i].processId << " |\n";
-        } else {
-            cout << setw(10) << "Free" << " |\n";
-        }
-    }
-    cout << "+-------------------+-------+-------+------------+\n";
-}
-
-// Function to display a simple diagram of memory
 void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
-    cout << "\nMemory Diagram:\n";
+    cout << "\n+--------------------------------------------------+\n";
+    cout << "|                Memory Diagram                    |\n";
+    cout << "+--------------------------------------------------+\n";
+    cout << "| ";
     for (const auto& block : blocks) {
         cout << "[";
         if (block.allocated) {
@@ -49,12 +33,12 @@ void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
         } else {
             cout << "Free (" << block.size << "KB)";
         }
-        cout << "] ";
+        cout << "]";
     }
-    cout << "\n";
+    cout << "|\n";
+    cout << "+--------------------------------------------------+\n";
 }
 
-// Function to display processes
 void displayProcesses(const vector<Process>& processes) {
     cout << "\n+-----------+------+\n";
     cout << "| Process   | Size |\n";
@@ -65,7 +49,6 @@ void displayProcesses(const vector<Process>& processes) {
     cout << "+-----------+------+\n";
 }
 
-// Best Fit Allocation Function
 void bestFit(vector<MemoryBlock>& blocks, vector<Process>& processes) {
     for (auto& process : processes) {
         int bestIndex = -1;
@@ -120,8 +103,9 @@ int main() {
             bool occupied = (state == "yes");
             string pid = "";
             if (occupied) {
-                cout << "Enter process ID: ";
-                cin >> pid;
+                cout << "Enter process ID (leave empty to mark occupied without id): ";
+                cin >> ws;
+                getline(cin, pid);
             }
             blocks.push_back({currentStart, currentStart + size, size, occupied, pid});
             currentStart += size;
@@ -142,8 +126,9 @@ int main() {
             bool occupied = (state == "yes");
             string pid = "";
             if (occupied) {
-                cout << "Enter process ID: ";
-                cin >> pid;
+                cout << "Enter process ID : ";
+                cin >> ws;
+                getline(cin, pid);
             }
             blocks.push_back({currentStart, currentStart + size, size, occupied, pid});
             currentStart += size;
@@ -154,10 +139,8 @@ int main() {
     }
 
     cout << "Initial Memory Blocks:\n";
-    displayMemory(blocks);
     displayMemoryDiagram(blocks);
 
-    // Sample processes - can be modified for user input
     vector<Process> processes = {
         {"1", 212},
         {"2", 417},
@@ -172,7 +155,6 @@ int main() {
     bestFit(blocks, processes);
 
     cout << "\nFinal Memory State:\n";
-    displayMemory(blocks);
     displayMemoryDiagram(blocks);
 
     cout << "\nAllocation Summary:\n";
