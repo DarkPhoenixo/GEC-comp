@@ -13,64 +13,51 @@ struct MemoryBlock {
     int size;
     bool allocated;
     string processId;
-};
-
-struct Process {
-    string id;
-    int size;
-    bool allocated;
+    int processSize; 
 };
 
 void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
     cout << "\n+--------------------------------------------------+\n";
     cout << "|                Memory Diagram                    |\n";
     cout << "+--------------------------------------------------+\n";
-    cout << "| ";
+    
     for (const auto& block : blocks) {
-        cout << "[";
+        cout << "| [";
         if (block.allocated) {
-            cout << "P" << block.processId << " (" << block.size << "KB)";
+            cout << "P" << block.processId << " (" << block.processSize << "KB)";
+            int internalFrag = block.size - block.processSize;
+            if (internalFrag > 0) {
+                cout << " | Free (" << internalFrag << "KB)";
+            }
         } else {
             cout << "Free (" << block.size << "KB)";
         }
-        cout << "] ";
+        cout << "] " << block.start << "-" << block.end << " KB" << setw(20) << "|\n";
     }
-    cout << "|\n";
     cout << "+--------------------------------------------------+\n";
 }
 
-void displayProcesses(const vector<Process>& processes) {
-    cout << "\n+-----------+------+\n";
-    cout << "| Process   | Size |\n";
-    cout << "+-----------+------+\n";
-    for (const auto& p : processes) {
-        cout << "| P" << setw(8) << p.id << " | " << setw(4) << p.size << " |\n";
-    }
-    cout << "+-----------+------+\n";
-}
-
-void bestFit(vector<MemoryBlock>& blocks, vector<Process>& processes) {
-    for (auto& process : processes) {
-        int bestIndex = -1;
-        int minWaste = INT_MAX;
-        for (size_t i = 0; i < blocks.size(); ++i) {
-            if (!blocks[i].allocated && blocks[i].size >= process.size) {
-                int waste = blocks[i].size - process.size;
-                if (waste < minWaste) {
-                    minWaste = waste;
-                    bestIndex = i;
-                }
-            }
-        }
-        if (bestIndex != -1) {
-            blocks[bestIndex].allocated = true;
-            blocks[bestIndex].processId = process.id;
-            process.allocated = true;
-            cout << "Allocated Process P" << process.id << " (Size: " << process.size << ") to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
-        } else {
-            cout << "Could not allocate Process P" << process.id << " (Size: " << process.size << ") - No suitable block found.\n";
+void displayFragmentation(const vector<MemoryBlock>& blocks) {
+    int totalInternalFrag = 0;
+    cout << "\nInternal Fragmentation Details:\n";
+    cout << "+---------------------------------------------------------+\n";
+    cout << "| Block | Process | Block Size | Process Size | Waste    |\n";
+    cout << "+---------------------------------------------------------+\n";
+    
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        if (blocks[i].allocated) {
+            int waste = blocks[i].size - blocks[i].processSize;
+            totalInternalFrag += waste;
+            cout << "| " << setw(5) << (i + 1) 
+                 << " | " << setw(7) << ("P" + blocks[i].processId)
+                 << " | " << setw(10) << blocks[i].size << " KB"
+                 << " | " << setw(12) << blocks[i].processSize << " KB"
+                 << " | " << setw(8) << waste << " KB |\n";
         }
     }
+    cout << "+---------------------------------------------------------+\n";
+    cout << "| Total Internal Fragmentation:           " << setw(15) << totalInternalFrag << " KB |\n";
+    cout << "+---------------------------------------------------------+\n";
 }
 
 int main() {
@@ -87,7 +74,7 @@ int main() {
     cin >> totalMemory;
 
     vector<MemoryBlock> blocks;
-    if (approach == "fixed") {
+    if (approach == "fixed" || approach == "variable") {
         int currentStart = 0;
         while (currentStart < totalMemory) {
             int size;
@@ -102,35 +89,19 @@ int main() {
             cin >> state;
             bool occupied = (state == "yes");
             string pid = "";
+            int processSize = 0;
             if (occupied) {
-                cout << "Enter process ID (leave empty to mark occupied without id): ";
+                cout << "Enter process ID: ";
                 cin >> ws;
                 getline(cin, pid);
+                cout << "Enter process size in KB: ";
+                cin >> processSize;
+                if (processSize > size) {
+                    cout << "Process size cannot exceed block size. Setting to block size.\n";
+                    processSize = size;
+                }
             }
-            blocks.push_back({currentStart, currentStart + size, size, occupied, pid});
-            currentStart += size;
-        }
-    } else if (approach == "variable") {
-        int currentStart = 0;
-        while (currentStart < totalMemory) {
-            int size;
-            cout << "Enter size of block starting at " << currentStart << " KB (remaining: " << (totalMemory - currentStart) << " KB): ";
-            cin >> size;
-            if (size <= 0 || currentStart + size > totalMemory) {
-                cout << "Invalid size. Must be positive and not exceed remaining memory. Try again.\n";
-                continue;
-            }
-            string state;
-            cout << "Is this block occupied? (yes/no): ";
-            cin >> state;
-            bool occupied = (state == "yes");
-            string pid = "";
-            if (occupied) {
-                cout << "Enter process ID (leave empty to mark occupied without id): ";
-                cin >> ws;
-                getline(cin, pid);
-            }
-            blocks.push_back({currentStart, currentStart + size, size, occupied, pid});
+            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, processSize});
             currentStart += size;
         }
     } else {
@@ -138,33 +109,60 @@ int main() {
         return 1;
     }
 
-    cout << "Initial Memory Blocks:\n";
+    cout << "\nInitial Memory Blocks:";
     displayMemoryDiagram(blocks);
+    
+    if (approach == "fixed") {
+        displayFragmentation(blocks);
+    }
 
-    vector<Process> processes = {
-        {"1", 212},
-        {"2", 417},
-        {"3", 112},
-        {"4", 426}
-    };
+    // Dynamic request loop
+    while (true) {
+        string ans;
+        cout << "\nDo you have a request? (yes/no): ";
+        cin >> ans;
+        if (ans == "no") {
+            break;
+        }
+        if (ans != "yes") {
+            continue;
+        }
 
-    cout << "\nProcesses to Allocate:\n";
-    displayProcesses(processes);
+        string pid;
+        int size;
+        cout << "Enter process ID: ";
+        cin >> pid;
+        cout << "Enter process size in KB: ";
+        cin >> size;
 
-    cout << "\nAllocating using Best Fit Algorithm:\n";
-    bestFit(blocks, processes);
+        // Find best fit
+        int bestIndex = -1;
+        int minWaste = INT_MAX;
+        for (size_t i = 0; i < blocks.size(); ++i) {
+            if (!blocks[i].allocated && blocks[i].size >= size) {
+                int waste = blocks[i].size - size;
+                if (waste < minWaste) {
+                    minWaste = waste;
+                    bestIndex = i;
+                }
+            }
+        }
 
-    cout << "\nFinal Memory State:\n";
-    displayMemoryDiagram(blocks);
-
-    cout << "\nAllocation Summary:\n";
-    for (const auto& p : processes) {
-        if (p.allocated) {
-            cout << "Process P" << p.id << " allocated successfully.\n";
+        if (bestIndex != -1) {
+            blocks[bestIndex].allocated = true;
+            blocks[bestIndex].processId = pid;
+            blocks[bestIndex].processSize = size;
+            cout << "\nRequest granted. Allocated Process P" << pid << " (Size: " << size << " KB) to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << " KB, End: " << blocks[bestIndex].end << " KB)\n";
+            displayMemoryDiagram(blocks);
+            
+            if (approach == "fixed") {
+                displayFragmentation(blocks);
+            }
         } else {
-            cout << "Process P" << p.id << " could not be allocated.\n";
+            cout << "\nRequest rejected as it will cause external fragmentation.\n";
         }
     }
 
+    cout << "\nThank you.\n";
     return 0;
 }

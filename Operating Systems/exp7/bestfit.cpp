@@ -13,25 +13,21 @@ struct MemoryBlock {
     int size;
     bool allocated;
     string processId;
-    int processSize; // Added to store the allocated process size for fragmentation calculation
+    int processSize; 
 };
 
 void displayMemoryDiagram(const vector<MemoryBlock>& blocks) {
-    cout << "\n+--------------------------------------------------+\n";
-    cout << "|                Memory Diagram                    |\n";
-    cout << "+--------------------------------------------------+\n";
-    cout << "| ";
-    for (const auto& block : blocks) {
-        cout << "[";
+    cout << "\n================ Memory Layout ================\n";
+    for (size_t i = 0; i < blocks.size(); ++i) {
+        const auto& block = blocks[i];
+        cout << "Block " << (i + 1) << ": [" << block.start << " - " << block.end << "] ";
         if (block.allocated) {
-            cout << "P" << block.processId << " (" << block.size << "KB)";
+            cout << "Allocated to Process " << block.processId << " (Used: " << block.processSize << " KB, Block Size: " << block.size << " KB)\n";
         } else {
-            cout << "Free (" << block.size << "KB)";
+            cout << "Free (Size: " << block.size << " KB)\n";
         }
-        cout << "]";
     }
-    cout << "|\n";
-    cout << "+--------------------------------------------------+\n";
+    cout << "===============================================\n";
 }
 
 int main() {
@@ -68,7 +64,7 @@ int main() {
                 cin >> ws;
                 getline(cin, pid);
             }
-            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, 0}); // processSize initialized to 0
+            blocks.push_back({currentStart, currentStart + size, size, occupied, pid, occupied ? size : 0}); // processSize set to block size if occupied, else 0
             currentStart += size;
         }
     } else {
@@ -115,7 +111,7 @@ int main() {
             blocks[bestIndex].allocated = true;
             blocks[bestIndex].processId = pid;
             blocks[bestIndex].processSize = size;
-            cout << "Request granted. Allocated Process P" << pid << " (Size: " << size << ") to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
+            cout << "Request granted. Allocated Process " << pid << " (Size: " << size << " KB, Wasted: " << (blocks[bestIndex].size - size) << " KB) to Block " << bestIndex + 1 << " (Start: " << blocks[bestIndex].start << ", End: " << blocks[bestIndex].end << ")\n";
             displayMemoryDiagram(blocks);
             if (approach == "fixed") {
                 // Calculate and display total internal fragmentation
@@ -125,13 +121,13 @@ int main() {
                         totalWaste += b.size - b.processSize;
                     }
                 }
-                cout << "Loss due to internal fragmentation: " << totalWaste << " KB\n";
+                cout << "Total internal fragmentation: " << totalWaste << " KB\n";
             }
         } else {
             cout << "Request rejected as it will cause external fragmentation.\n";
         }
     }
 
-    cout << "\nThank you .\n";
+    cout << "\nThank you.\n";
     return 0;
 }
