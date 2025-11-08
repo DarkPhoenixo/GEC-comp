@@ -13,12 +13,12 @@ struct MemoryBlock {
     int end;
     int size;
     bool allocated;
-    string processId; // "" if not allocated
+    int processId; // -1 if not allocated
 };
 
 // Structure for Process
 struct Process {
-    string id;
+    int id;
     int size;
     bool allocated;
 };
@@ -105,26 +105,16 @@ int main() {
 
     vector<MemoryBlock> blocks;
     if (approach == "fixed") {
-        int currentStart = 0;
-        while (currentStart < totalMemory) {
-            int size;
-            cout << "Enter size of block starting at " << currentStart << " KB (remaining: " << (totalMemory - currentStart) << " KB): ";
-            cin >> size;
-            if (size <= 0 || currentStart + size > totalMemory) {
-                cout << "Invalid size. Must be positive and not exceed remaining memory. Try again.\n";
-                continue;
-            }
-            string state;
-            cout << "Is this block occupied? (yes/no): ";
-            cin >> state;
-            bool occupied = (state == "yes");
-            string pid = "";
-            if (occupied) {
-                cout << "Enter process ID: ";
-                cin >> pid;
-            }
-            blocks.push_back({currentStart, currentStart + size, size, occupied, pid});
-            currentStart += size;
+        int blockSize;
+        cout << "Enter block size in KB: ";
+        cin >> blockSize;
+        if (blockSize <= 0 || totalMemory % blockSize != 0) {
+            cout << "Invalid block size. Must divide total memory evenly and be positive.\n";
+            return 1;
+        }
+        int numBlocks = totalMemory / blockSize;
+        for (int i = 0; i < numBlocks; ++i) {
+            blocks.push_back({i * blockSize, (i + 1) * blockSize, blockSize, false, -1});
         }
     } else if (approach == "variable") {
         int currentStart = 0;
@@ -140,7 +130,7 @@ int main() {
             cout << "Is this block occupied? (yes/no): ";
             cin >> state;
             bool occupied = (state == "yes");
-            string pid = "";
+            int pid = -1;
             if (occupied) {
                 cout << "Enter process ID: ";
                 cin >> pid;
@@ -159,10 +149,10 @@ int main() {
 
     // Sample processes - can be modified for user input
     vector<Process> processes = {
-        {"1", 212},
-        {"2", 417},
-        {"3", 112},
-        {"4", 426}
+        {1, 212},
+        {2, 417},
+        {3, 112},
+        {4, 426}
     };
 
     cout << "\nProcesses to Allocate:\n";
