@@ -4,13 +4,14 @@
 #include <set>
 #include <iomanip>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
 // Function to simulate FIFO Page Replacement Algorithm
 void fifoPageReplacement(const vector<int>& referenceString, int numFrames) {
-    queue<int> fifoQueue;  // Queue to maintain the order of pages in frames
-    set<int> frames;       // Set to quickly check if a page is in frames
+    queue<int> fifoQueue;  
+    set<int> frames;       
     int pageFaults = 0;
     int hits = 0;
 
@@ -32,6 +33,7 @@ void fifoPageReplacement(const vector<int>& referenceString, int numFrames) {
     // Process each page in the reference string
     for (int page : referenceString) {
         string status;
+        string framesStr = "[";
         if (frames.find(page) != frames.end()) {
             // Page hit
             hits++;
@@ -51,13 +53,14 @@ void fifoPageReplacement(const vector<int>& referenceString, int numFrames) {
             fifoQueue.push(page);
         }
 
-        // Display current frames
-        cout << left << setw(10) << page;
-        cout << "[";
+        // Build frames string
         for (int f : frames) {
-            cout << f << " ";
+            framesStr += to_string(f) + " ";
         }
-        cout << "]" << setw(10) << status << endl;
+        framesStr += "]";
+
+        // Display row
+        cout << left << setw(10) << page << left << setw(15) << framesStr << setw(10) << status << endl;
     }
 
     // Summary

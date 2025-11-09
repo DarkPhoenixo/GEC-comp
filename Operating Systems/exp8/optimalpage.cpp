@@ -1,8 +1,10 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <unordered_map>
 #include <iomanip>
-#include <limits>
+#include <string>
+#include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -29,47 +31,32 @@ int findOptimalPage(const vector<int>& frames, const vector<int>& referenceStrin
     return (pageToReplace == -1) ? 0 : pageToReplace;
 }
 
-// Function to display the current state of frames
-void displayFrames(const vector<int>& frames, int pageFaults) {
-    cout << "| ";
-    for (int frame : frames) {
-        if (frame == -1) {
-            cout << setw(3) << " " << " | ";
-        } else {
-            cout << setw(3) << frame << " | ";
-        }
-    }
-    cout << "Page Faults: " << pageFaults << endl;
-}
-
-int main() {
-    int numFrames, numReferences;
-    
-    cout << "=====================================" << endl;
-    cout << "   Optimal Page Replacement Algorithm" << endl;
-    cout << "=====================================" << endl;
-    
-    cout << "Enter the number of frames: ";
-    cin >> numFrames;
-    
-    cout << "Enter the number of references: ";
-    cin >> numReferences;
-    
-    vector<int> referenceString(numReferences);
-    cout << "Enter the reference string: ";
-    for (int i = 0; i < numReferences; ++i) {
-        cin >> referenceString[i];
-    }
-    
+// Function to simulate Optimal Page Replacement Algorithm
+void optimalPageReplacement(const vector<int>& referenceString, int numFrames) {
     vector<int> frames(numFrames, -1);
     int pageFaults = 0;
-    
-    cout << "\nSimulation:\n";
-    cout << "Reference | Frames" << string(numFrames * 6, ' ') << "| Page Faults\n";
-    cout << "----------|" << string(numFrames * 6, '-') << "|------------\n";
-    
-    for (int i = 0; i < numReferences; ++i) {
+    int hits = 0;
+
+    // Print header
+    cout << "\n=====================================\n";
+    cout << "   Optimal Page Replacement Algorithm\n";
+    cout << "=====================================\n";
+    cout << "Number of Frames: " << numFrames << endl;
+    cout << "Reference String: ";
+    for (int page : referenceString) {
+        cout << page << " ";
+    }
+    cout << "\n\n";
+
+    // Table header
+    cout << left << setw(10) << "Reference" << setw(20) << "Frames" << setw(10) << "Status" << endl;
+    cout << string(40, '-') << endl;
+
+    // Process each page in the reference string
+    for (size_t i = 0; i < referenceString.size(); ++i) {
         int page = referenceString[i];
+        string status;
+        vector<int> currentFrames = frames;
         bool pageFound = false;
         
         // Check if page is already in frames
@@ -80,26 +67,66 @@ int main() {
             }
         }
         
-        if (!pageFound) {
+        if (pageFound) {
+            hits++;
+            status = "Hit";
+        } else {
             // Page fault
             pageFaults++;
-            if (find(frames.begin(), frames.end(), -1) != frames.end()) {
+            status = "Fault";
+            auto it = find(frames.begin(), frames.end(), -1);
+            if (it != frames.end()) {
                 // Empty slot available
-                *find(frames.begin(), frames.end(), -1) = page;
+                *it = page;
             } else {
                 // Replace the optimal page
                 int replaceIndex = findOptimalPage(frames, referenceString, i + 1);
                 frames[replaceIndex] = page;
             }
+            currentFrames = frames;
         }
-        
-        // Display current state
-        cout << setw(9) << page << " | ";
-        displayFrames(frames, pageFaults);
+
+        // Build frames string
+        string framesStr = "[";
+        for (size_t j = 0; j < currentFrames.size(); ++j) {
+            if (currentFrames[j] != -1) framesStr += to_string(currentFrames[j]);
+            else framesStr += " ";
+            if (j < currentFrames.size() - 1) framesStr += ",";
+        }
+        framesStr += "]";
+
+        // Display row
+        cout << left << setw(10) << page << left << setw(20) << framesStr << setw(10) << status << endl;
     }
-    
-    cout << "\nTotal Page Faults: " << pageFaults << endl;
-    cout << "Total Page Hits: " << (numReferences - pageFaults) << endl;
-    
+
+    // Summary
+    cout << "\n=====================================\n";
+    cout << "Summary:\n";
+    cout << "Total Page Faults: " << pageFaults << endl;
+    cout << "Total Hits: " << hits << endl;
+    cout << "Hit Ratio: " << fixed << setprecision(2) << (hits * 100.0) / referenceString.size() << "%" << endl;
+    cout << "=====================================\n";
+}
+
+int main() {
+    int numFrames;
+    vector<int> referenceString;
+
+    cout << "Enter the number of frames: ";
+    cin >> numFrames;
+
+    cout << "Enter the reference string (space-separated, end with -1): ";
+    int page;
+    while (cin >> page && page != -1) {
+        referenceString.push_back(page);
+    }
+
+    if (referenceString.empty()) {
+        cout << "No reference string provided. Exiting." << endl;
+        return 1;
+    }
+
+    optimalPageReplacement(referenceString, numFrames);
+
     return 0;
 }
