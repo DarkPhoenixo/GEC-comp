@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Department CRUD</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .insert { background: green; color: white; }
+        .update { background: blue; color: white; }
+        .delete { background: red; color: white; }
+        .view { background: orange; color: white; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #333; color: white; }
+    </style>
+</head>
+<body>
+    <h2>Department Management</h2>
+    
+    <form method="POST" action="crud.php">
+        <input type="number" name="deptno" placeholder="Department Number" required>
+        <input type="text" name="dname" placeholder="Department Name" required>
+        <input type="text" name="location" placeholder="Location">
+        
+        <div>
+            <button type="submit" name="action" value="insert" class="insert">INSERT</button>
+            <button type="submit" name="action" value="update" class="update">UPDATE</button>
+            <button type="submit" name="action" value="delete" class="delete">DELETE</button>
+            <button type="submit" name="action" value="view" class="view">VIEW</button>
+        </div>
+    </form>
+    
+    <div id="result"></div>
+</body>
+</html>
