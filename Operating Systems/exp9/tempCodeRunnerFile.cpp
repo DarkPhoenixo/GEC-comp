@@ -2,10 +2,9 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
-#include <algorithm>
 using namespace std;
 
-void clookDiskScheduling() {
+void fcfsDiskScheduling() {
     int blockSize;
     cout << "Enter block size: ";
     cin >> blockSize;
@@ -20,7 +19,7 @@ void clookDiskScheduling() {
         }
         requestQueue.push_back(req);
     }
- 
+    
     int currentHead;
     cout << "Enter current head position: ";
     cin >> currentHead;
@@ -28,59 +27,32 @@ void clookDiskScheduling() {
     int previousHead;
     cout << "Enter previous head position: ";
     cin >> previousHead;
- 
-    string direction;
-    cout << "Enter direction (left/right): ";
-    cin >> direction;
-   
-    vector<int> left, right;
     
-    for (int i = 0; i < requestQueue.size(); i++) {
-        if (requestQueue[i] < currentHead) {
-            left.push_back(requestQueue[i]);
-        } else {
-            right.push_back(requestQueue[i]);
-        }
-    }
-
-    sort(left.begin(), left.end());
-    sort(right.begin(), right.end());
-
     cout << "\n" << string(40, '-') << endl;
-    cout << std::left << setw(10) << "From" 
+    cout << left << setw(10) << "From" 
          << setw(10) << "To" 
          << setw(10) << "Distance" << endl;
     cout << string(40, '-') << endl;
- 
+    
     vector<int> trackSequence;
     trackSequence.push_back(currentHead);
     int totalHeadMovement = 0;
-    vector<int> seekSequence;
-
-    if (direction == "right") {
-        seekSequence.insert(seekSequence.end(), right.begin(), right.end());
-
-        seekSequence.insert(seekSequence.end(), left.begin(), left.end());
-    } else {
-        reverse(left.begin(), left.end());
-        seekSequence.insert(seekSequence.end(), left.begin(), left.end());
-        reverse(right.begin(), right.end());
-        seekSequence.insert(seekSequence.end(), right.begin(), right.end());
-    }
     
-    for (int i = 0; i < seekSequence.size(); i++) {
-        int distance = abs(seekSequence[i] - currentHead);
+    for (int i = 0; i < requestQueue.size(); i++) {
+        int request = requestQueue[i];
+        int distance = abs(request - currentHead);
         totalHeadMovement += distance;
         
-        cout << std::left << setw(10) << currentHead 
-             << setw(10) << seekSequence[i] 
+        cout << left << setw(10) << currentHead 
+             << setw(10) << request 
              << setw(10) << distance << endl;
         
-        currentHead = seekSequence[i];
+        currentHead = request;
         trackSequence.push_back(currentHead);
     }
     
     cout << string(40, '-') << endl;
+    
     cout << "\nTrack sequence: ";
     for (int i = 0; i < trackSequence.size(); i++) {
         cout << trackSequence[i];
@@ -95,6 +67,6 @@ void clookDiskScheduling() {
 }
 
 int main() {
-    clookDiskScheduling();
+    fcfsDiskScheduling();
     return 0;
 }

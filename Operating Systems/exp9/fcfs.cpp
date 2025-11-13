@@ -6,7 +6,7 @@ using namespace std;
 
 void fcfsDiskScheduling() {
     int blockSize;
-    cout << "Enter block size: ";
+    cout << "Enter Total number of cylinder: ";
     cin >> blockSize;
     
     cout << "Enter request queue (-1 to exit):" << endl;
