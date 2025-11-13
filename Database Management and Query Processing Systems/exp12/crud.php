@@ -1,5 +1,5 @@
 <?php
-// Database connection
+
 $conn = new mysqli('localhost', 'root', '', 'Atharv');
 
 if ($conn->connect_error) {
@@ -10,8 +10,8 @@ $action = $_POST['action'];
 $deptno = $_POST['deptno'];
 $dname = $_POST['dname'];
 $location = $_POST['location'];
+ 
 
-// Perform action
 if ($action == 'insert') {
     $sql = "INSERT INTO dept (deptno, dname, location) VALUES ($deptno, '$dname', '$location')";
     $conn->query($sql);

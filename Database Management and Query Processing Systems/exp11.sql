@@ -3,8 +3,6 @@ CREATE TABLE table2 (a2 INT)$
 CREATE TABLE table3 (a3 INT PRIMARY KEY)$
 CREATE TABLE table4 (a4 INT PRIMARY KEY, b4 INT DEFAULT 0)$
 
-
-
 $CREATE TRIGGER trg1
 AFTER INSERT ON table1
 FOR EACH ROW
@@ -19,46 +17,35 @@ END$
 DELETE FROM table3$
 DELETE FROM table4$
 
-INSERT INTO table3 (a3) VALUES (101), (202), (303)$
-INSERT INTO table4 (a4, b4) VALUES (101, 10), (999, 20)$
-INSERT INTO table1 (a1) VALUES (101), (404)$
+INSERT INTO table3 (a3) VALUES (150), (202), (303)$
+INSERT INTO table4 (a4, b4) VALUES (150, 10), (999, 20)$
+INSERT INTO table1 (a1) VALUES (150)$
 
 
 
-CREATE TABLE emp_proj (
-    empid INT PRIMARY KEY,
-    number_of_projects INT DEFAULT 0,
-    total_number_of_hrs DECIMAL(10, 2) DEFAULT 0.00
-)$
 
-CREATE TABLE proj_info (
-    project_number INT PRIMARY KEY,
-    number_of_employees INT DEFAULT 0,
-    total_number_of_hrs_spent DECIMAL(10, 2) DEFAULT 0.00
-)$
+CREATE TABLE emp_proj AS  SELECT  eno AS empid, COUNT(pno) AS number_of_projects,SUM(hours_per_week) AS total_number_of_hrs FROM worksonGROUP BY eno$
+ALTER TABLE emp_proj ADD PRIMARY KEY (empid)$
 
+CREATE TABLE proj_info AS SELECT pno AS project_number,COUNT(eno) AS number_of_employees,SUM(hours_per_week) AS total_number_of_hrs_spent FROM workson GROUP BY pno$
+ALTER TABLE proj_info ADD PRIMARY KEY (project_number)$
 
 $CREATE TRIGGER trg2
 AFTER DELETE ON workson
 FOR EACH ROW
 BEGIN
-
-    UPDATE emp_proj AS ep
-    SET 
-        ep.number_of_projects = (SELECT COUNT(pno) FROM workson WHERE eno = OLD.eno),
-        ep.total_number_of_hrs = (SELECT SUM(hours_per_week) FROM workson WHERE eno = OLD.eno)
-    WHERE ep.empid = OLD.eno;
     
-
-    UPDATE proj_info AS pi
+    UPDATE emp_proj
     SET 
-        pi.number_of_employees = (SELECT COUNT(eno) FROM workson WHERE pno = OLD.pno),
-        pi.total_number_of_hrs_spent = (SELECT SUM(hours_per_week) FROM workson WHERE pno = OLD.pno)
-    WHERE pi.project_number = OLD.pno;
+        number_of_projects = (SELECT COUNT(pno) FROM workson WHERE eno = OLD.eno),
+        total_number_of_hrs = (SELECT IFNULL(SUM(hours_per_week), 0) FROM workson WHERE eno = OLD.eno)
+    WHERE empid = OLD.eno;
+    
+   
+    UPDATE proj_info
+    SET 
+        number_of_employees = (SELECT COUNT(eno) FROM workson WHERE pno = OLD.pno),
+        total_number_of_hrs_spent = (SELECT IFNULL(SUM(hours_per_week), 0) FROM workson WHERE pno = OLD.pno)
+    WHERE project_number = OLD.pno;
     
 END$
-
-
-INSERT INTO emp_proj (empid, number_of_projects, total_number_of_hrs) VALUES (101, 4, 105.00)$
-INSERT INTO proj_info (project_number, number_of_employees, total_number_of_hrs_spent) VALUES (4, 3, 36.00)$
-DELETE FROM workson WHERE eno = 101 AND pno = 4;
