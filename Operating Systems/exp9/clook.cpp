@@ -7,7 +7,7 @@ using namespace std;
 
 void clookDiskScheduling() {
     int blockSize;
-    cout << "Enter block size: ";
+    cout << "Enter Total number of cylinder:  ";
     cin >> blockSize;
     
     cout << "Enter request queue (-1 to exit):" << endl;
@@ -29,9 +29,8 @@ void clookDiskScheduling() {
     cout << "Enter previous head position: ";
     cin >> previousHead;
  
-    string direction;
-    cout << "Enter direction (left/right): ";
-    cin >> direction;
+    // Determine direction based on previousHead and currentHead
+    string direction = (previousHead < currentHead) ? "right" : "left";
    
     vector<int> left, right;
     
@@ -53,13 +52,20 @@ void clookDiskScheduling() {
     cout << string(40, '-') << endl;
  
     vector<int> trackSequence;
-    trackSequence.push_back(currentHead);
+    trackSequence.push_back(previousHead);
     int totalHeadMovement = 0;
     vector<int> seekSequence;
 
+    // Add initial movement from previousHead to currentHead
+    int initialDistance = abs(currentHead - previousHead);
+    totalHeadMovement += initialDistance;
+    cout << std::left << setw(10) << previousHead 
+         << setw(10) << currentHead 
+         << setw(10) << initialDistance << endl;
+    trackSequence.push_back(currentHead);
+
     if (direction == "right") {
         seekSequence.insert(seekSequence.end(), right.begin(), right.end());
-
         seekSequence.insert(seekSequence.end(), left.begin(), left.end());
     } else {
         reverse(left.begin(), left.end());

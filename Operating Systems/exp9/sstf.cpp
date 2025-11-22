@@ -7,7 +7,7 @@ using namespace std;
 
 void sstfDiskScheduling() {
     int blockSize;
-    cout << "Enter block size: ";
+    cout << "Enter Total number of cylinder:  ";
     cin >> blockSize;
     
     cout << "Enter request queue (-1 to exit):" << endl;
@@ -24,9 +24,6 @@ void sstfDiskScheduling() {
     cout << "Enter current head position: ";
     cin >> currentHead;
     
-    int previousHead;
-    cout << "Enter previous head position: ";
-    cin >> previousHead;
     
     cout << "\n" << string(40, '-') << endl;
     cout << left << setw(10) << "From" 

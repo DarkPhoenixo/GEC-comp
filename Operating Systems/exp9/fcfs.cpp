@@ -6,7 +6,7 @@ using namespace std;
 
 void fcfsDiskScheduling() {
     int blockSize;
-    cout << "Enter Total number of cylinder: ";
+    cout << " Enter Total number of cylinder: ";
     cin >> blockSize;
     
     cout << "Enter request queue (-1 to exit):" << endl;
@@ -24,9 +24,7 @@ void fcfsDiskScheduling() {
     cout << "Enter current head position: ";
     cin >> currentHead;
     
-    int previousHead;
-    cout << "Enter previous head position: ";
-    cin >> previousHead;
+
     
     cout << "\n" << string(40, '-') << endl;
     cout << left << setw(10) << "From" 

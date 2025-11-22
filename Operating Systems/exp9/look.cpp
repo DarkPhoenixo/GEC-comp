@@ -7,7 +7,7 @@ using namespace std;
 
 void lookDiskScheduling() {
     int blockSize;
-    cout << "Enter block size: ";
+    cout << "Enter Total number of cylinder: ";
     cin >> blockSize;
     
     cout << "Enter request queue (-1 to exit):" << endl;
@@ -30,8 +30,11 @@ void lookDiskScheduling() {
     cin >> previousHead;
     
     string direction;
-    cout << "Enter direction (left/right): ";
-    cin >> direction;
+    if (previousHead < currentHead) {
+        direction = "right";
+    } else {
+        direction = "left";
+    }
     
     vector<int> left, right;
     
