@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 
 
+#-----RZ Unipolar encoding---------------------------------------------------------------
 def rz_unipolar(bits, voltage):
 
     time = [0]
@@ -37,18 +38,10 @@ def rz_unipolar(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+    
+#-----------------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
+#-----NRZ-L encoding----------------------------------------------------------------------
 def nrz_l(bits, voltage):
 
     time = [0]
@@ -80,14 +73,10 @@ def nrz_l(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
+#-----NRZ-I encoding----------------------------------------------------------------------
 def nrz_i(bits, voltage):
 
     time = [0]
@@ -119,13 +108,10 @@ def nrz_i(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
+#-----Manchester encoding-----------------------------------------------------------------
 def manchester(bits, voltage):
 
     time = [0]
@@ -167,15 +153,10 @@ def manchester(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
+#-----Differential Manchester encoding----------------------------------------------------
 def differential_manchester(bits, voltage):
 
     time = [0]
@@ -215,16 +196,10 @@ def differential_manchester(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
+#-----AMI encoding------------------------------------------------------------------------
 def ami(bits, voltage):
 
     time = [0]
@@ -257,15 +232,10 @@ def ami(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
+#-----Pseudoternary encoding---------------------------------------------------------------
 def pseudoternary(bits, voltage):
 
     time = [0]
@@ -298,13 +268,10 @@ def pseudoternary(bits, voltage):
     plt.axhline(0, color='green') 
     plt.axvline(0, color='green')
     plt.show()
+#-----------------------------------------------------------------------------------------
 
 
-
-
-
-
-
+#-------INPUT-------------------------------------------------------------------------------
 bits = input("Enter Data Bit: ")
 voltage = float(input("Enter Voltage: "))
 
@@ -339,3 +306,6 @@ while True:
         break
     else:
         print("Invalid choice. Please try again.")
+
+
+#--------------------------END--------------------------------------------
