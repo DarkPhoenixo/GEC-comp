@@ -11,11 +11,11 @@ root = tk.Tk()
 root.title("Stop & Wait ARQ Timeline")
 
 CANVAS_W = 800
-CANVAS_H = 700
+CANVAS_H = 1200  # Increased even more
 SENDER_X = 150
 RECV_X = 650
 START_Y = 80
-STEP = 100 
+STEP = 100  # Uniform step for all cases
 
 canvas = tk.Canvas(root, width=CANVAS_W, height=CANVAS_H, bg="white")
 canvas.pack()
@@ -38,12 +38,12 @@ frames = []
 
 def draw_frame(y, frame_data, lost=False):
     color = "red" if not lost else "gray"
-    canvas.create_line(SENDER_X, y, RECV_X, y + 60,
+    canvas.create_line(SENDER_X, y, RECV_X, y + 40,
                        fill=color, width=2, arrow=tk.LAST)
-    canvas.create_rectangle(RECV_X - 15, y + 50, RECV_X + 15, y + 70,
+    canvas.create_rectangle(RECV_X - 15, y + 30, RECV_X + 15, y + 50,
                              fill=color, outline=color)
     text = f"{frame_data} (LOST)" if lost else str(frame_data)
-    canvas.create_text(RECV_X, y + 60, text=text, fill="white",
+    canvas.create_text(RECV_X, y + 40, text=text, fill="white",
                        font=("Arial", 9, "bold"))
     canvas.update()
 
@@ -52,9 +52,9 @@ def draw_timer(y):
     if timer_rect:
         canvas.delete(timer_rect)
     timer_rect = canvas.create_rectangle(SENDER_X - 20, y,
-                                         SENDER_X - 8, y + 60,
+                                         SENDER_X - 8, y + 40,
                                          fill="yellow", outline="black")
-    canvas.create_text(SENDER_X - 35, y + 30, text="TIMER",
+    canvas.create_text(SENDER_X - 35, y + 20, text="TIMER",
                        font=("Arial", 7), angle=90)
     canvas.update()
 
@@ -64,13 +64,12 @@ def clear_timer():
         canvas.delete(timer_rect)
         timer_rect = None
 
-def draw_ack(y, s, lost=False):
-    color = "green" if not lost else "purple"
-    canvas.create_line(RECV_X, y + 60, SENDER_X, y + 100,
+def draw_ack(y, s):
+    color = "green"
+    canvas.create_line(RECV_X, y + 40, SENDER_X, y + 60,
                        fill=color, width=2, arrow=tk.LAST)
-    text = f"ACK{s} (LOST)" if lost else f"ACK{s}"
-    canvas.create_text(SENDER_X + 30, y + 100,
-                       text=text, fill=color,
+    canvas.create_text(SENDER_X + 30, y + 60,
+                       text=f"ACK{s}", fill=color,
                        font=("Arial", 9, "bold"))
     canvas.update()
 
@@ -87,30 +86,49 @@ def sender():
             root.after(0, lambda cy=current_y: draw_timer(cy))
             time.sleep(0.5)
 
+            # Always increment y_pos by STEP - uniform spacing
+            y_pos += STEP
+
             if not frame_lost:
                 client.send(f"{seq}:{f}".encode())
             else:
                 print(f"Frame {seq} lost during transmission")
+                root.after(0, clear_timer)
+                time.sleep(0.3)
                 continue
 
             client.settimeout(3)
 
             try:
-                ack = client.recv(1024).decode()
+                ack = client.recv(1024).decode().strip()
 
-                if not ack_lost:
-                    root.after(0, lambda cy=current_y, s=seq: draw_ack(cy, s))
-                else:
-                    root.after(0, lambda cy=current_y, s=seq: draw_ack(cy, s, True))
-                    print(f"ACK {seq} lost during transmission")
+                # Parse ACK number from the received message
+                ack_num = None
+                if ack.startswith("ACK"):
+                    try:
+                        ack_num = int(ack[3:])
+                    except ValueError:
+                        ack_num = None
+
+                # If we simulate ACK loss, don't draw it at all
+                if ack_lost:
+                    print(f"Simulating ACK loss at sender side for: {ack}")
+                    root.after(0, clear_timer)
+                    time.sleep(0.3)
                     raise socket.timeout
+
+                # Draw the ACK only if it wasn't lost
+                if ack_num is not None:
+                    root.after(0, lambda cy=current_y, s=ack_num: draw_ack(cy, s))
+                else:
+                    print("Received invalid ACK:", repr(ack))
 
                 root.after(0, clear_timer)
                 time.sleep(0.5)
 
-                if ack == f"ACK{seq}" and not ack_lost:
+                # Only accept ACK if it matches current seq
+                if ack == f"ACK{seq}":
                     seq = 1 - seq
-                    y_pos += STEP + 40
                     break
 
             except socket.timeout:
