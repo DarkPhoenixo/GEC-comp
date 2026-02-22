@@ -21,16 +21,16 @@ while True:
     print("Received Frame", seq, "expected", expected_seq)
 
     if seq == expected_seq:
-        # simulate ACK loss (only for the correct/expected frame)
+     
         if random.random() < 0.2:  # 20% chance
             print("ACK LOST (simulated) for", seq)
-            # IMPORTANT: do not advance expected_seq
+           
             continue
 
         conn.send(f"ACK{seq}".encode())
         expected_seq = 1 - expected_seq
     else:
-        # Duplicate/unexpected frame: re-send last ACK
+      
         last_acked = 1 - expected_seq
         print(f"Duplicate frame {seq}. Resending ACK{last_acked}")
         conn.send(f"ACK{last_acked}".encode())

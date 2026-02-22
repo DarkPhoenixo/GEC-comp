@@ -9,8 +9,8 @@ print("Server waiting...")
 conn, addr = server.accept()
 
 WINDOW_SIZE = 4
-received_frames = set()  # Track all received frames
-next_expected = 0  # Next frame to deliver to upper layer
+received_frames = set()  
+next_expected = 0 
 
 while True:
     data = conn.recv(1024).decode()
@@ -22,19 +22,19 @@ while True:
 
     print(f"Received Frame {seq}")
 
-    # Simulate ACK loss
+    
     if random.random() < 0.15:  # 15% chance
         print(f"ACK LOST (simulated) for frame {seq}")
         continue
 
-    # Send ACK for this specific frame (individual ACK)
+    
     conn.send(f"ACK{seq}".encode())
     print(f"Sent ACK{seq}")
     
-    # Mark frame as received
+    
     received_frames.add(seq)
     
-    # Deliver frames in order to upper layer
+  
     while next_expected in received_frames:
         print(f"Delivering frame {next_expected} to upper layer")
         next_expected += 1

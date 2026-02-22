@@ -21,17 +21,17 @@ while True:
     print("Received Frame", seq, "expected", expected_seq)
 
     if seq == expected_seq:
-        # simulate ACK loss (only for the correct/expected frame)
+        
         if random.random() < 0.15:  # Reduced to 15%
             print("ACK LOST (simulated) for", seq)
-            # IMPORTANT: do not advance expected_seq
+          
             continue
 
         conn.send(f"ACK{seq}".encode())
         print(f"Sent ACK{seq}")
         expected_seq += 1
     else:
-        # Out-of-order frame: re-send last ACK
+    
         last_acked = expected_seq - 1
         if last_acked >= 0:
             print(f"Out-of-order frame {seq}. Resending ACK{last_acked}")
