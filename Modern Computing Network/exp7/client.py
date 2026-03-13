@@ -21,11 +21,10 @@ WINDOW_SIZE = 4
 canvas = tk.Canvas(root, width=CANVAS_W, height=CANVAS_H, bg="white")
 canvas.pack()
 
-# vertical lines
 canvas.create_line(SENDER_X, START_Y, SENDER_X, CANVAS_H - 50, width=3)
 canvas.create_line(RECV_X, START_Y, RECV_X, CANVAS_H - 50, width=3)
 
-# arrows on vertical lines
+
 canvas.create_line(SENDER_X, CANVAS_H - 50, SENDER_X, CANVAS_H - 30,
                    width=3, arrow=tk.LAST)
 
@@ -81,10 +80,10 @@ def sender():
     next_seq = 0
     ack_received = set()
     sent_frames = {}
-    pending_acks = []  # Queue to store ACKs to draw
+    pending_acks = [] 
     
     def check_acks():
-        """Background thread to continuously check for ACKs"""
+       
         nonlocal base
         client.settimeout(0.1)
         
@@ -101,12 +100,12 @@ def sender():
                 break
             time.sleep(0.05)
     
-    # Start ACK receiver thread
+    
     ack_thread = threading.Thread(target=check_acks, daemon=True)
     ack_thread.start()
     
     while base < len(frames):
-        # Send frames within window
+    
         while next_seq < len(frames) and next_seq < base + WINDOW_SIZE:
             current_y = y_pos
             
@@ -129,9 +128,9 @@ def sender():
                 print(f"Frame {next_seq} lost during transmission")
             
             next_seq += 1
-            time.sleep(0.1)  # Small delay between sends
+            time.sleep(0.1) 
 
-        # Process any pending ACKs
+        
         while pending_acks:
             ack_num = pending_acks.pop(0)
             ack_lost = random.random() < 0.15
@@ -156,9 +155,9 @@ def sender():
             else:
                 print(f"ACK {ack_num} lost (simulated)")
         
-        # Check for timeout
+        
         if next_seq >= base + WINDOW_SIZE or next_seq >= len(frames):
-            time.sleep(1)  # Wait a bit for ACKs
+            time.sleep(1)  
             
             if base < next_seq and not pending_acks:
                 print(f"Timeout! Going back to frame {base}")

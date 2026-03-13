@@ -1,25 +1,52 @@
-from collections import deque
 import heapq
 
 def best_first_search(graph, heuristic, start, goal):
-  visited = set()
-  pq = [(heuristic[start], start)]
-  visited.add(start)
-  result = []
-  
-  while pq:
-    _, node = heapq.heappop(pq)
-    result.append(node)
-    
+  open_pq = [(heuristic[start], start, None)] 
+  closed = []
+  parent_map = {start: None}
+  open_set = set([start]) 
+
+  step = 1
+  while open_pq:
+    print(f"\nStep {step}:")
+    # Print OPEN
+    print("OPEN: ", end="")
+    print([f"({n}, {parent_map.get(n)}, {h})" for h, n, _ in sorted(open_pq)])
+    # Print CLOSED
+    print("CLOSED: ", end="")
+    print([f"({n}, {parent_map.get(n)}, {heuristic[n]})" for n in closed])
+
+    _, node, _ = heapq.heappop(open_pq)
+    open_set.remove(node)
+    closed.append(node)
+
     if node == goal:
+      print("\nGoal state found.")
       break
-    
+
     for neighbor in graph[node]:
-      if neighbor not in visited:
-        visited.add(neighbor)
-        heapq.heappush(pq, (heuristic[neighbor], neighbor))
+      if neighbor not in closed and neighbor not in open_set:
+        parent_map[neighbor] = node
+        heapq.heappush(open_pq, (heuristic[neighbor], neighbor, node))
+        open_set.add(neighbor)
+    step += 1
+
   
-  return result
+  print(f"\nStep {step}:")
+  print("OPEN: ", end="")
+  print([f"({n}, {parent_map.get(n)}, {heuristic[n]})" for n in open_set])
+  print("CLOSED: ", end="")
+  print([f"({n}, {parent_map.get(n)}, {heuristic[n]})" for n in closed])
+
+  
+  path = []
+  curr = goal
+  while curr is not None:
+    path.append(curr)
+    curr = parent_map.get(curr)
+  path.reverse()
+  print(f"\nPath: {' -> '.join(path)}   Length = {len(path)-1}")
+
 
 
 start_node = input("Enter starting node: ")
@@ -47,6 +74,5 @@ for i in range(m):
       user_graph[u].append(v)
       user_graph[v].append(u)
 
-print("\nBest First Search starting from", start_node + ":")
+print("\nBest First Search steps :")
 result = best_first_search(user_graph, heuristic, start_node, goal_node)
-print(result)

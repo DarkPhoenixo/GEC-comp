@@ -1,5 +1,5 @@
 import socket
-import tkinter as tk
+import tkinter as tk        
 import threading
 import time
 import random
@@ -11,20 +11,20 @@ root = tk.Tk()
 root.title("Stop & Wait ARQ Timeline")
 
 CANVAS_W = 800
-CANVAS_H = 1200  # Increased even more
+CANVAS_H = 1200  
 SENDER_X = 150
 RECV_X = 650
 START_Y = 80
-STEP = 100  # Uniform step for all cases
+STEP = 100  
 
 canvas = tk.Canvas(root, width=CANVAS_W, height=CANVAS_H, bg="white")
 canvas.pack()
 
-# vertical lines
+
 canvas.create_line(SENDER_X, START_Y, SENDER_X, CANVAS_H - 50, width=3)
 canvas.create_line(RECV_X, START_Y, RECV_X, CANVAS_H - 50, width=3)
 
-# arrows on vertical lines
+
 canvas.create_line(SENDER_X, CANVAS_H - 50, SENDER_X, CANVAS_H - 30,
                    width=3, arrow=tk.LAST)
 
@@ -86,7 +86,7 @@ def sender():
             root.after(0, lambda cy=current_y: draw_timer(cy))
             time.sleep(0.5)
 
-            # Always increment y_pos by STEP - uniform spacing
+            
             y_pos += STEP
 
             if not frame_lost:
@@ -102,7 +102,7 @@ def sender():
             try:
                 ack = client.recv(1024).decode().strip()
 
-                # Parse ACK number from the received message
+                
                 ack_num = None
                 if ack.startswith("ACK"):
                     try:
@@ -110,14 +110,14 @@ def sender():
                     except ValueError:
                         ack_num = None
 
-                # If we simulate ACK loss, don't draw it at all
+                
                 if ack_lost:
                     print(f"Simulating ACK loss at sender side for: {ack}")
                     root.after(0, clear_timer)
                     time.sleep(0.3)
                     raise socket.timeout
 
-                # Draw the ACK only if it wasn't lost
+                
                 if ack_num is not None:
                     root.after(0, lambda cy=current_y, s=ack_num: draw_ack(cy, s))
                 else:
@@ -126,7 +126,7 @@ def sender():
                 root.after(0, clear_timer)
                 time.sleep(0.5)
 
-                # Only accept ACK if it matches current seq
+            
                 if ack == f"ACK{seq}":
                     seq = 1 - seq
                     break

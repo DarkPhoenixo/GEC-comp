@@ -21,11 +21,11 @@ WINDOW_SIZE = 4
 canvas = tk.Canvas(root, width=CANVAS_W, height=CANVAS_H, bg="white")
 canvas.pack()
 
-# vertical lines
+
 canvas.create_line(SENDER_X, START_Y, SENDER_X, CANVAS_H - 50, width=3)
 canvas.create_line(RECV_X, START_Y, RECV_X, CANVAS_H - 50, width=3)
 
-# arrows on vertical lines
+
 canvas.create_line(SENDER_X, CANVAS_H - 50, SENDER_X, CANVAS_H - 30,
                    width=3, arrow=tk.LAST)
 
@@ -79,14 +79,14 @@ def sender():
 
     base = 0
     next_seq = 0
-    ack_received = set()  # Track individually acknowledged frames
+    ack_received = set() 
     sent_frames = {}
     pending_acks = []
-    frame_timers = {}  # Individual timers for each frame
+    frame_timers = {} 
     lock = threading.Lock()
     
     def check_acks():
-        """Background thread to continuously check for ACKs"""
+       
         client.settimeout(0.1)
         
         while base < len(frames):
@@ -104,7 +104,7 @@ def sender():
             time.sleep(0.05)
     
     def check_timeouts():
-        """Background thread to check for individual frame timeouts"""
+        
         nonlocal next_seq
         while base < len(frames):
             time.sleep(0.2)
@@ -121,14 +121,14 @@ def sender():
                             if frame_num in frame_timers:
                                 del frame_timers[frame_num]
     
-    # Start background threads
+    
     ack_thread = threading.Thread(target=check_acks, daemon=True)
     timeout_thread = threading.Thread(target=check_timeouts, daemon=True)
     ack_thread.start()
     timeout_thread.start()
     
     while base < len(frames):
-        # Send frames within window that haven't been sent or need retransmission
+
         for frame_num in range(base, min(base + WINDOW_SIZE, len(frames))):
             if frame_num not in sent_frames and frame_num not in ack_received:
                 current_y = y_pos
@@ -146,16 +146,16 @@ def sender():
                 if not frame_lost:
                     with lock:
                         client.send(f"{frame_num}:{frames[frame_num]}".encode())
-                        frame_timers[frame_num] = time.time()  # Start individual timer
+                        frame_timers[frame_num] = time.time() 
                     print(f"Sent frame {frame_num}")
                 else:
                     print(f"Frame {frame_num} lost during transmission")
                     with lock:
-                        del sent_frames[frame_num]  # Mark for retransmission
+                        del sent_frames[frame_num] 
                 
                 time.sleep(0.1)
 
-        # Process any pending ACKs
+        
         while pending_acks:
             with lock:
                 ack_num = pending_acks.pop(0)
@@ -170,7 +170,7 @@ def sender():
                 with lock:
                     ack_received.add(ack_num)
                     
-                    # Slide window if base is acknowledged
+                
                     while base in ack_received and base < len(frames):
                         base += 1
                 

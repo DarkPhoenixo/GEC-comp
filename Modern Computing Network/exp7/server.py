@@ -22,7 +22,7 @@ while True:
 
     if seq == expected_seq:
         
-        if random.random() < 0.15:  # Reduced to 15%
+        if random.random() < 0.15: 
             print("ACK LOST (simulated) for", seq)
           
             continue
