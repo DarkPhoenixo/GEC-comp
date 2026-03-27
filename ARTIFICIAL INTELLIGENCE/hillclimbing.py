@@ -1,3 +1,5 @@
+
+#-----------------------------------------------------------------------------
 def hill_climbing(graph, heuristic, start, goal, maximize=False):
   current = start
   path = [current]
@@ -23,6 +25,8 @@ def hill_climbing(graph, heuristic, start, goal, maximize=False):
     visited.add(current)
 
   return path
+
+#-------------------------------------------------------------------------------------
 
 start_node = input("Enter starting node: ")
 goal_node = input("Enter goal node: ")

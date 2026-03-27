@@ -1,3 +1,5 @@
+
+#---------------------------------------------------------------------
 def dfs_stack(graph, start):
   stack = [(start, None)]
   closed_list = []
@@ -21,7 +23,7 @@ def dfs_stack(graph, start):
 
   print(f"{step:<5} {list(stack)!s:<40} {closed_list}")
   return closed_list
-
+#-------------------------------------------------------------------------
 
 
 start_node = input("Enter starting node: ")

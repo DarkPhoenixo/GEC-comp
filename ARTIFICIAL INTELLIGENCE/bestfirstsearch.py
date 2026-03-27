@@ -1,5 +1,7 @@
 import heapq
 
+#------------------------------------------------------------------------------
+
 def best_first_search(graph, heuristic, start, goal):
   open_pq = [(heuristic[start], start, None)] 
   closed = []
@@ -46,7 +48,7 @@ def best_first_search(graph, heuristic, start, goal):
     curr = parent_map.get(curr)
   path.reverse()
   print(f"\nPath: {' -> '.join(path)}   Length = {len(path)-1}")
-
+#----------------------------------------------------------------------------
 
 
 start_node = input("Enter starting node: ")

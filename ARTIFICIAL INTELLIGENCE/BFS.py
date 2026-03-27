@@ -1,5 +1,7 @@
 from collections import deque
 
+
+#----------------------------------------------------------------------------
 def bfs(graph, start):
   open_list = deque([(start, None)]) 
   closed_list = []
@@ -24,6 +26,8 @@ def bfs(graph, start):
   
   print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
   return closed_list
+#------------------------------------------------------------------------------------
+
 
 start_node = input("Enter starting node: ")
 
