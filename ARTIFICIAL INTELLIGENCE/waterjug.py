@@ -1,107 +1,57 @@
+from math import gcd
 from collections import deque
-
-
-#----------------------------------------------------------------------------
-def bfs(generate_func, start, goal):
-  open_list = deque([(start, None)])
-  closed_list = []
-  visited = set([start])
-
-  step = 1
-
-  while open_list:
-    node, parent = open_list.popleft()
-    closed_list.append((node, parent))
-
-    print(f"Step {step}: Expanding node {node}")
-    step += 1
-
-    if node == goal:
-      break
-
-    successors = generate_func(node)
-    if successors:
-        print(f"  Successors:")
-        for i, succ in enumerate(successors, 1):
-            print(f"    {i}. {succ}")
-    else:
-        print(f"  Successors: None")
-
-    for neighbor in successors:
-      if neighbor not in visited:
-        visited.add(neighbor)
-        open_list.append((neighbor, node))
-
-  return closed_list
-#------------------------------------------------------------------------------------
-
-def generate(state, jug1_cap, jug2_cap, target):
-    j1, j2 = state
-    successors = []
-
-    # Fill jug1
-    if j1 < jug1_cap:
-        successors.append((jug1_cap, j2))
-
-    # Fill jug2
-    if j2 < jug2_cap:
-        successors.append((j1, jug2_cap))
-
-    # Empty jug1
-    if j1 > 0:
-        successors.append((0, j2))
-
-    # Empty jug2
-    if j2 > 0:
-        successors.append((j1, 0))
-
-    # Pour from jug1 to jug2
-    if j1 > 0 and j2 < jug2_cap:
-        pour = min(j1, jug2_cap - j2)
-        successors.append((j1 - pour, j2 + pour))
-
-    # Pour from jug2 to jug1
-    if j2 > 0 and j1 < jug1_cap:
-        pour = min(j2, jug1_cap - j1)
-        successors.append((j1 + pour, j2 - pour))
-
-    return successors
-
-jug1_cap = int(input("Enter capacity of jug 1: "))
-jug2_cap = int(input("Enter capacity of jug 2: "))
-target = int(input("Enter target amount: "))
-
-initial = (0, 0)
-goal = None
-
-# Find goal state
-for j1 in range(jug1_cap + 1):
-    for j2 in range(jug2_cap + 1):
-        if j1 == target or j2 == target:
-            goal = (j1, j2)
-            break
-    if goal:
-        break
-
-if not goal:
-    print("No solution possible with given capacities and target.")
-    exit()
-
-print(f"\nBFS traversal for Water Jug problem (step-by-step):")
-print(f"Jug 1 capacity: {jug1_cap}, Jug 2 capacity: {jug2_cap}, Target: {target}")
-print(f"Initial state: {initial}, Goal state: {goal}\n")
-
-closed_list = bfs(lambda state: generate(state, jug1_cap, jug2_cap, target), initial, goal)
-
-# Reconstruct path
-parent_of = {node: parent for node, parent in closed_list}
-path = []
-current = goal
-while current is not None:
-    path.append(current)
-    current = parent_of.get(current)
-path.reverse()
-
-print("\nPath to solution:")
-for state in path:
-    print(state)
+def is_possible(jug1_cap, jug2_cap, target):
+    if target % gcd(jug1_cap, jug2_cap) != 0:
+        return False
+    return True
+def bfs(start, target, jug1_cap, jug2_cap):
+    visited = []
+    parent = {}
+    queue = deque()
+    queue.append(start)
+    visited.append(start)
+    parent[start] = None
+    while queue:
+        jug1, jug2 = queue.popleft()
+        if jug1 == target or jug2 == target:
+            path = []
+            current = (jug1, jug2)
+            while current is not None:
+                path.append(current)
+                current = parent[current]
+            path.reverse()
+            print("\nSolution Path:")
+            for i, state in enumerate(path):
+                print(f"Step {i}: {state}")
+            return path
+        next_states = [
+            (jug1_cap, jug2),  
+            (jug1, jug2_cap),  
+            (0, jug2),         
+            (jug1, 0),         
+            (jug1 - min(jug1, jug2_cap - jug2),
+             jug2 + min(jug1, jug2_cap - jug2)),
+            (jug1 + min(jug2, jug1_cap - jug1),
+             jug2 - min(jug2, jug1_cap - jug1))  ]
+        for state in next_states:
+            if state[0] < 0 or state[1] < 0:
+                continue
+            if state[0] > jug1_cap or state[1] > jug2_cap:
+                continue
+            if state not in visited:
+                visited.append(state)
+                parent[state] = (jug1, jug2)
+                queue.append(state)
+    return None
+jug1_cap = int(input("Enter capacity of jug1: "))
+jug2_cap = int(input("Enter capacity of jug2: "))
+target = int(input("Enter required amount: "))
+if(target < 0 or jug1_cap < 0 or jug2_cap < 0 or target > max(jug1_cap, jug2_cap)):
+    print("\nInvalid input.")
+if is_possible(jug1_cap, jug2_cap, target):
+    start = (0, 0)
+    result = bfs(start, target, jug1_cap, jug2_cap)
+    if not result:
+        print("\nNo solution found.")
+else:
+    print("\nSolution not possible.")

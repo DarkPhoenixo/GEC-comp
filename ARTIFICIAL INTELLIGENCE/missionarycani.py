@@ -1,87 +1,52 @@
+from collections import deque
 
-#---------------------------------------------------------------------
-def dfs_stack(generate_func, start, goal):
-  stack = [(start, None)]
-  closed_list = []
-  visited = set([start])
+def isValid(mLeft, cLeft):
+    if mLeft < 0 or mLeft > 3 or cLeft < 0 or cLeft > 3:
+        return False
 
-  step = 1
+    if mLeft > 0 and mLeft < cLeft:
+        return False
+    mRight = 3 - mLeft
+    cRight = 3 - cLeft
 
-  while stack:
-    node, parent = stack.pop()
-    closed_list.append((node, parent))
+    if mRight > 0 and mRight < cRight:
+        return False
+    return True
+def missionariesAndCannibals():
+    solutions = 0
+    stack = deque()
 
-    print(f"Step {step}: Expanding node {node}")
-    step += 1
+    start = (3, 3, 0)
+    stack.append((3, 3, 0, [start]))
 
-    if node == goal:
-      break
+    moves = [(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)]
 
-    successors = generate_func(node)
-    if successors:
-        print(f"  Successors:")
-        for i, succ in enumerate(successors, 1):
-            print(f"    {i}. {succ}")
-    else:
-        print(f"  Successors: None")
+    while stack:
+        m, c, b, path = stack.pop()
 
-    for neighbor in reversed(successors):
-      if neighbor not in visited:
-        visited.add(neighbor)
-        stack.append((neighbor, node))
+        if (m, c, b) == (0, 0, 1):
+            solutions += 1
+            print(f"\nSolution {solutions}:")
+            for state in path:
+                print(f"({state[0]}, {state[1]}, ", end="")
+                if state[2] == 0:
+                    print("L)")
+                else:
+                    print("R)")
+            continue
 
-  return closed_list
-#-------------------------------------------------------------------------
+        for moveM, moveC in moves:
 
-def generate(state, n_m, n_c):
-    m, c, b = state
-    successors = []
-    if b == 0:  # boat on left, moving to right
-        for dm in range(4):  # 0 to 3 missionaries
-            for dc in range(4):  # 0 to 3 cannibals
-                if dm + dc >= 1 and dm + dc <= 2:
-                    nm = m - dm
-                    nc = c - dc
-                    if nm >= 0 and nc >= 0:
-                        # left side: if nm > 0, nc <= nm
-                        if nm == 0 or nc <= nm:
-                            # right side: rm = n_m - nm, rc = n_c - nc
-                            rm = n_m - nm
-                            rc = n_c - nc
-                            if rm == 0 or rc <= rm:
-                                successors.append((nm, nc, 1))
-    else: 
-        for dm in range(4):
-            for dc in range(4):
-                if dm + dc >= 1 and dm + dc <= 2:
-                    nm = m + dm
-                    nc = c + dc
-                    if nm <= n_m and nc <= n_c:
-                        if nm == 0 or nc <= nm:
-                            rm = n_m - nm
-                            rc = n_c - nc
-                            if rm == 0 or rc <= rm:
-                                successors.append((nm, nc, 0))
-    return successors
+            if b == 0:
+                newState = (m - moveM, c - moveC, 1)
+            else:
+                newState = (m + moveM, c + moveC, 0)
 
-n_m = int(input("Enter number of missionaries: "))
-n_c = int(input("Enter number of cannibals: "))
+            _m, _c, _b = newState
 
-initial = (n_m, n_c, 0)
-goal = (0, 0, 1)
+            if isValid(_m, _c) and newState not in path:
+                stack.append((_m, _c, _b, path + [newState]))
 
-print("\nDFS traversal for Missionary Cannibals problem (step-by-step):")
-closed_list = dfs_stack(lambda state: generate(state, n_m, n_c), initial, goal)
+    print(f"\nTotal Solutions: {solutions}")
 
-# Reconstruct path
-parent_of = {node: parent for node, parent in closed_list}
-path = []
-current = goal
-while current is not None:
-    path.append(current)
-    current = parent_of.get(current)
-path.reverse()
-
-print("\nPath to solution:")
-for state in path:
-    print(state)
+missionariesAndCannibals()

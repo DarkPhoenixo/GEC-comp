@@ -2,10 +2,11 @@ from collections import deque
 
 
 #----------------------------------------------------------------------------
-def bfs(graph, start):
+def bfs(graph, start, goal):
   open_list = deque([(start, None)]) 
   closed_list = []
   visited = set([start])
+  parent_map = {start: None}
 
   print(f"{'Step':<5} {'OPEN':<40} {'CLOSED'}")
   step = 1
@@ -18,18 +19,36 @@ def bfs(graph, start):
     node, parent = open_list.popleft()
     closed_list.append((node, parent))
 
+    if node == goal:
+      print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
+      print("GOAL STATE REACHED")
+      break
+
     for neighbor in graph[node]:
       if neighbor not in visited:
         visited.add(neighbor)
+        parent_map[neighbor] = node
         open_list.append((neighbor, node))
 
   
   print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
+  
+  # Print path
+  path = []
+  current = goal
+  while current is not None:
+    path.append(current)
+    current = parent_map.get(current)
+  
+  path.reverse()
+  print(f"\nPath from {start} to {goal}: {' -> '.join(path)}")
+  
   return closed_list
 #------------------------------------------------------------------------------------
 
 
 start_node = input("Enter starting node: ")
+goal_node = input("Enter goal node: ")
 
 n = int(input("Enter number of nodes: "))
 nodes = []
@@ -51,4 +70,4 @@ for i in range(m):
       user_graph[v].append(u)
 
 print("\nBFS traversal (step-by-step):")
-bfs(user_graph, start_node)
+bfs(user_graph, start_node, goal_node)

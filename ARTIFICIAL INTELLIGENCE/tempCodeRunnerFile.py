@@ -1,87 +1,73 @@
+from collections import deque
 
-#---------------------------------------------------------------------
-def dfs_stack(generate_func, start, goal):
-  stack = [(start, None)]
+
+#----------------------------------------------------------------------------
+def bfs(graph, start, goal):
+  open_list = deque([(start, None)]) 
   closed_list = []
   visited = set([start])
+  parent_map = {start: None}
 
+  print(f"{'Step':<5} {'OPEN':<40} {'CLOSED'}")
   step = 1
 
-  while stack:
-    node, parent = stack.pop()
-    closed_list.append((node, parent))
-
-    print(f"Step {step}: Expanding node {node}")
+  while open_list:
+    
+    print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
     step += 1
 
+    node, parent = open_list.popleft()
+    closed_list.append((node, parent))
+
     if node == goal:
+      print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
+      print("GOAL STATE REACHED")
       break
 
-    successors = generate_func(node)
-    if successors:
-        print(f"  Successors:")
-        for i, succ in enumerate(successors, 1):
-            print(f"    {i}. {succ}")
-    else:
-        print(f"  Successors: None")
-
-    for neighbor in reversed(successors):
+    for neighbor in graph[node]:
       if neighbor not in visited:
         visited.add(neighbor)
-        stack.append((neighbor, node))
+        parent_map[neighbor] = node
+        open_list.append((neighbor, node))
 
-  return closed_list
-#-------------------------------------------------------------------------
-
-def generate(state, n_m, n_c):
-    m, c, b = state
-    successors = []
-    if b == 0:  # boat on left, moving to right
-        for dm in range(4):  # 0 to 3 missionaries
-            for dc in range(4):  # 0 to 3 cannibals
-                if dm + dc >= 1 and dm + dc <= 2:
-                    nm = m - dm
-                    nc = c - dc
-                    if nm >= 0 and nc >= 0:
-                        # left side: if nm > 0, nc <= nm
-                        if nm == 0 or nc <= nm:
-                            # right side: rm = n_m - nm, rc = n_c - nc
-                            rm = n_m - nm
-                            rc = n_c - nc
-                            if rm == 0 or rc <= rm:
-                                successors.append((nm, nc, 1))
-    else: 
-        for dm in range(4):
-            for dc in range(4):
-                if dm + dc >= 1 and dm + dc <= 2:
-                    nm = m + dm
-                    nc = c + dc
-                    if nm <= n_m and nc <= n_c:
-                        if nm == 0 or nc <= nm:
-                            rm = n_m - nm
-                            rc = n_c - nc
-                            if rm == 0 or rc <= rm:
-                                successors.append((nm, nc, 0))
-    return successors
-
-n_m = int(input("Enter number of missionaries: "))
-n_c = int(input("Enter number of cannibals: "))
-
-initial = (n_m, n_c, 0)
-goal = (0, 0, 1)
-
-print("\nDFS traversal for Missionary Cannibals problem (step-by-step):")
-closed_list = dfs_stack(lambda state: generate(state, n_m, n_c), initial, goal)
-
-# Reconstruct path
-parent_of = {node: parent for node, parent in closed_list}
-path = []
-current = goal
-while current is not None:
+  
+  print(f"{step:<5} {list(open_list)!s:<40} {closed_list}")
+  
+  # Print path
+  path = []
+  current = goal
+  while current is not None:
     path.append(current)
-    current = parent_of.get(current)
-path.reverse()
+    current = parent_map.get(current)
+  
+  path.reverse()
+  print(f"\nPath from {start} to {goal}: {' -> '.join(path)}")
+  
+  return closed_list
+#------------------------------------------------------------------------------------
 
-print("\nPath to solution:")
-for state in path:
-    print(state)
+
+start_node = input("Enter starting node: ")
+goal_node = input("Enter goal node: ")
+
+n = int(input("Enter number of nodes: "))
+nodes = []
+for i in range(n):
+  node = input(f"Enter node {i+1}: ")
+  nodes.append(node)
+
+user_graph = {}
+for node in nodes:
+  user_graph[node] = []
+
+m = int(input("Enter number of edges: "))
+for i in range(m):
+  edge = input(f"Enter edge {i+1} (format: node1 node2): ").split()
+  if len(edge) == 2:
+    u, v = edge
+    if u in user_graph and v in user_graph:
+      user_graph[u].append(v)
+      user_graph[v].append(u)
+
+print("\nBFS traversal (step-by-step):")
+dfs(user_graph, start_node, goal_node)
