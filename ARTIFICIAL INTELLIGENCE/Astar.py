@@ -3,51 +3,63 @@ graph = {}
 heuristics = {}
 Nil = None
 
-
+#---------------------------------------------------
 def Head(lst):
 	return lst[0] if lst else None
+#--------------------------------------------------
 
-
+#------------------------------------------------
 def Tail(lst):
 	return lst[1:] if lst else []
+#---------------------------------------------
 
-
+#--------------------------------------------
 def Cons(item, lst):
 	return [item] + lst
+#--------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def Append(list1, list2):
 	return list1 + list2
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def GoalTest(node):
 	return node == goal
+#-------------------------------------------------------------------------------------
 
-
+#------------------------------------------------
 def MoveGen(node):
 	return graph.get(node, [])
+#---------------------------------------------
 
-
+#--------------------------------------------
 def h(node):
 	return heuristics.get(node, 99)
+#--------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def FindNode(lst, node):
 	return next((item for item in lst if item[0] == node), Nil)
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def RemoveNode(lst, node):
 	return [item for item in lst if item[0] != node]
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def ReplaceNode(lst, node, new_node):
 	return [new_node if item[0] == node else item for item in lst]
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def Sort_f(lst):
 	return sorted(lst, key=lambda x: (x[4], x[3], x[0]))
+#-------------------------------------------------------------------------------------
 
 
+#-------------------------------------------------------------------------------------
 def ReconstructPath(nodepair, closed):
 	path = [nodepair[0]]
 	parent = nodepair[1]
@@ -57,8 +69,9 @@ def ReconstructPath(nodepair, closed):
 		parent = node[1] if node else Nil
 	path.reverse()
 	return path
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def PropagateImprovement(nodepair, open_list, closed):
 	neighbours = MoveGen(nodepair[0])
 	for child, cost in neighbours:
@@ -76,8 +89,9 @@ def PropagateImprovement(nodepair, open_list, closed):
 					closed = ReplaceNode(closed, child, updated_child)
 				open_list, closed = PropagateImprovement(updated_child, open_list, closed)
 	return open_list, closed
+#-------------------------------------------------------------------------------------
 
-
+#-------------------------------------------------------------------------------------
 def AStarSearch(start):
 	start_h = h(start)
 	open_list = [(start, Nil, 0, start_h, start_h)]
@@ -117,8 +131,9 @@ def AStarSearch(start):
 
 		iteration += 1
 	return None
+#-------------------------------------------------------------------------------------
 
-
+#------------------------------------------------------------------------
 def GetUserInput():
 	global goal, graph, heuristics
 	n = int(input("Enter the number of nodes: "))
@@ -135,7 +150,7 @@ def GetUserInput():
 	start = input("\nEnter start node: ")
 	goal = input("Enter goal node: ")
 	return start
-
+#------------------------------------------------------------------------
 
 # Main Program
 start = GetUserInput()
@@ -144,3 +159,4 @@ if path:
 	print(f"\nPath: {' -> '.join(path)}")
 else:
 	print("\nNo path found.")
+#----------------------------------------------------------------------------------

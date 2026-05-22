@@ -3,14 +3,23 @@ graph = {}
 heuristics = {}
 Nil = None
 isAscending = False
+
+#---------------------------------------------------
 def GoalTest(node):
     return node == goal
+#--------------------------------------------------
+
+#------------------------------------------------
 def MoveGen(node):
     return graph.get(node, [])
+#---------------------------------------------
 
+#--------------------------------------------
 def h(node):
     return heuristics.get(node, 99)
+#--------------------------------------------
 
+#-------------------------------------------------------------------------------------
 def SteepestDescent(start):
     node = start
     path = [node]
@@ -38,6 +47,9 @@ def SteepestDescent(start):
         if GoalTest(node):
             return path
         iteration += 1
+#----------------------------------------------------------------------------------------------        
+
+#------------------------------------------------------------------------
 def GetUserInput():
     global goal, graph, heuristics, isAscending
     n = int(input("Enter the number of nodes: "))
@@ -60,4 +72,4 @@ if path:
     print(f"\nPath: {' -> '.join(path)}")
 else:
     print("\nNo path found.") 
-
+#----------------------------------------------------------------------------------
